@@ -11,6 +11,7 @@ export default function Index() {
     >
       <Text>Otra prueba mas.</Text>
       <Text>Hola Mundo</Text>
+      <Text>Hola Mundo</Text>
     </View>
   );
 }
