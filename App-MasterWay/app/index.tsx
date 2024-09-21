@@ -9,7 +9,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Hola mundo.....</Text>
+      <Text>Hola mundo desde React Native!</Text>
       
     </View>
   );
