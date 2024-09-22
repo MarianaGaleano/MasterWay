@@ -1,8 +1,12 @@
-import { View, Text, Image, StyleSheet } from 'react-native'
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { Colors } from '@/constants/Colors'
+import { useRouter } from 'expo-router';
 
 export default function Login() {
+
+  const router = useRouter();
+
   return (
     <View>
       <Image source={require('./../assets/images/logo.png')}
@@ -28,14 +32,16 @@ export default function Login() {
           marginTop:20
         }}>Descubre los mejores restaurantes, actividades y lugares de interés en cada destino, mientras aprovechas las recomendaciones de otros viajeros. ¡Explora el mundo a tu manera con itinerarios adaptados y el apoyo de la comunidad viajera!</Text>  
       
-        <View style={styles.button}>
+        <TouchableOpacity style={styles.button}
+          onPress={() => router.push('./../auth/sign-in')}
+        >
           <Text style={{
             textAlign:'center',
             color:Colors.BLANCO,
             fontFamily:'outfit-bold',
             fontSize:20
           }}>CONTINUAR</Text>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   )
