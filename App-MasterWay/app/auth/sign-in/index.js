@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation, useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 
@@ -43,62 +43,67 @@ export default function SignInScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      {/* Título */}
-      <Text style={styles.title}>
-        Master<Text style={styles.highlight}>Way</Text>
-      </Text>
-      
-      {/* Subtítulo */}
-      <Text style={styles.subtitle}>Inicia Sesión</Text>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
+        {/* Título */}
+        <Text style={styles.title}>
+          Master<Text style={styles.highlight}>Way</Text>
+        </Text>
+        
+        {/* Subtítulo */}
+        <Text style={styles.subtitle}>Inicia Sesión</Text>
 
-      {/* Entrada de Usuario o Email */}
-      <InputField
-        label="Usuario o Gmail"
-        placeholder="Ingresa tu usuario o gmail"
-      />
+        {/* Entrada de Usuario o Email */}
+        <InputField
+          label="Usuario o Gmail"
+          placeholder="Ingresa tu usuario o gmail"
+        />
 
-      {/* Entrada de Contraseña */}
-      <InputField
-        label="Contraseña"
-        placeholder="Ingresa tu contraseña"
-        secureTextEntry={true}
-      />
+        {/* Entrada de Contraseña */}
+        <InputField
+          label="Contraseña"
+          placeholder="Ingresa tu contraseña"
+          secureTextEntry={true}
+        />
 
-      {/* Texto de contraseña olvidada */}
-      <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+        {/* Texto de contraseña olvidada */}
+        <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
 
-      {/* Botón de iniciar sesión */}
-      <PrimaryButton title="Iniciar Sesión" onPress={() => console.log("Iniciar Sesión")} />
+        {/* Botón de iniciar sesión */}
+        <PrimaryButton title="Iniciar Sesión" onPress={() => console.log("Iniciar Sesión")} />
 
-      {/* Texto para crear una cuenta */}
-      <View style={styles.signUpContainer}>
-        <Text style={styles.signUpText}>¿No tienes una cuenta? </Text>
-        <TouchableOpacity onPress={() => router.replace('auth/sign-up')}>
-          <Text style={styles.signUpLink}>Crear Cuenta</Text>
-        </TouchableOpacity>
+        {/* Texto para crear una cuenta */}
+        <View style={styles.signUpContainer}>
+          <Text style={styles.signUpText}>¿No tienes una cuenta? </Text>
+          <TouchableOpacity onPress={() => router.replace('auth/sign-up')}>
+            <Text style={styles.signUpLink}>Crear Cuenta</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Separador */}
+        <Separator />
+
+        {/* Botones de métodos alternativos */}
+        <PrimaryButton
+          title="Registrarse con número de teléfono"
+          onPress={() => console.log("Registrarse con número de teléfono")}
+          style={styles.secondaryButton}
+        />
+        <PrimaryButton
+          title="Registrarse con Google"
+          onPress={() => console.log("Registrarse con Google")}
+          style={styles.secondaryButton}
+        />
       </View>
-
-      {/* Separador */}
-      <Separator />
-
-      {/* Botones de métodos alternativos */}
-      <PrimaryButton
-        title="Registrarse con número de teléfono"
-        onPress={() => console.log("Registrarse con número de teléfono")}
-        style={styles.secondaryButton}
-      />
-      <PrimaryButton
-        title="Registrarse con Google"
-        onPress={() => console.log("Registrarse con Google")}
-        style={styles.secondaryButton}
-      />
-    </View>
+    </ScrollView>
   );
 }
 
 // Estilos
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+  },
   container: {
     padding: 25,
     marginTop: 60,
