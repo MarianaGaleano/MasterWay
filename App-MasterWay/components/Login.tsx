@@ -28,7 +28,7 @@ export default function Login() {
           fontFamily:'outfit-regular',
           fontSize:20,
           textAlign: 'center',
-          color:Colors.GRIS,
+          color:Colors.GRAY,
           marginTop:20
         }}>Descubre los mejores restaurantes, actividades y lugares de interés en cada destino, mientras aprovechas las recomendaciones de otros viajeros. ¡Explora el mundo a tu manera con itinerarios adaptados y el apoyo de la comunidad viajera!</Text>  
       
@@ -37,7 +37,7 @@ export default function Login() {
         >
           <Text style={{
             textAlign:'center',
-            color:Colors.BLANCO,
+            color:Colors.WHITE,
             fontFamily:'outfit-bold',
             fontSize:20
           }}>CONTINUAR</Text>
@@ -49,7 +49,7 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   container:{
-    backgroundColor:Colors.BLANCO,
+    backgroundColor:Colors.WHITE,
     marginTop:-20,
     borderTopLeftRadius:30,
     borderTopRightRadius:30,
