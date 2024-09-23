@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation, useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from './../../../configs/FirebaseConfig'
 
 export default function SingIn() {
@@ -38,6 +38,22 @@ export default function SingIn() {
     console.log("--",errorMessage, errorCode);
     // ..
   });
+  }
+
+  const handleForgotPassword = () => {
+    if(!email){
+      alert("Por favor, ingresa tu correo electrónico");
+      return;
+  }
+
+  sendPasswordResetEmail(auth, email)
+  .then(() => {
+    alert("Se ha enviado un correo electrónico para restablecer tu contraseña");
+  })
+  .catch((error) => {
+    console.error("Error al enviar el correo electrónico de restablecimiento de contraseña:", error);
+  });
+
   }
 
   return (
@@ -88,12 +104,12 @@ export default function SingIn() {
             style={styles.input}
             onChangeText={(value)=>setPassword(value)}
             placeholder='Ingresa tu contraseña'/>
-            <Text style={{
+            <TouchableOpacity onPress={handleForgotPassword} style={{
               color:Colors.BLACK,
               textAlign:'right',
               marginTop:10,
               fontWeight: '600'
-            }}>Olvidaste tu contraseña?</Text>
+            }}>Olvidaste tu contraseña?</TouchableOpacity>
         </View>
 
         {/*BOTON INICIAR SESION */}
