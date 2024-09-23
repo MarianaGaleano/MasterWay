@@ -1,193 +1,195 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation, useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './../../../configs/FirebaseConfig'
 
-// Componente reutilizable para entradas de texto
-const InputField = ({ label, placeholder, secureTextEntry }) => (
-  <View style={styles.inputContainer}>
-    <Text style={styles.label}>{label}</Text>
-    <TextInput
-      style={styles.input}
-      placeholder={placeholder}
-      secureTextEntry={secureTextEntry}
-    />
-  </View>
-);
-
-// Componente reutilizable para botones principales
-const PrimaryButton = ({ title, onPress, style }) => (
-  <TouchableOpacity onPress={onPress} style={[styles.primaryButton, style]}>
-    <Text style={styles.buttonText}>{title}</Text>
-  </TouchableOpacity>
-);
-
-// Componente reutilizable para el separador
-const Separator = () => (
-  <View style={styles.separatorContainer}>
-    <View style={styles.line} />
-    <Text style={styles.separatorText}>O</Text>
-    <View style={styles.line} />
-  </View>
-);
-
-// Pantalla principal de inicio de sesión
-export default function SignInScreen() {
+export default function SingIn() {
   const navigation = useNavigation();
   const router = useRouter();
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
   useEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-    });
-  }, []);
+      navigation.setOptions({
+        headerShown: false,
+      })
+  },[])
+
+  const onSignIn=()=>{
+
+    if(!email || !password){
+      alert("Por favor, completa todos los campos");
+      return;
+    }
+
+    signInWithEmailAndPassword(auth, email, password)
+  .then((userCredential) => {
+    // Signed in 
+    const user = userCredential.user;
+    console.log(user);
+    // ...
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    console.log("--",errorMessage, errorCode);
+    // ..
+  });
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <View style={styles.container}>
-        {/* Título */}
-        <Text style={styles.title}>
-          Master<Text style={styles.highlight}>Way</Text>
-        </Text>
-        
-        {/* Subtítulo */}
-        <Text style={styles.subtitle}>Inicia Sesión</Text>
+    <View style={{
+      padding:25,
+      marginTop:60
+    }}>
+      <Text style={{
+          fontSize:50,
+          fontFamily:'outfit-bold',
+          textAlign: 'center',
+          fontWeight: 'bold'
+        }}>Master<Text style={{ color: '#63D2D9' }}>Way</Text></Text>
 
-        {/* Entrada de Usuario o Email */}
-        <InputField
-          label="Usuario o Gmail"
-          placeholder="Ingresa tu usuario o gmail"
-        />
+      <Text style={{
+          fontSize:30,
+          fontFamily:'outfit-bold',
+          color:Colors.GRAY,
+          marginTop:15
+        }}>Inicia Sesion</Text>
 
-        {/* Entrada de Contraseña */}
-        <InputField
-          label="Contraseña"
-          placeholder="Ingresa tu contraseña"
-          secureTextEntry={true}
-        />
-
-        {/* Texto de contraseña olvidada */}
-        <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
-
-        {/* Botón de iniciar sesión */}
-        <PrimaryButton title="Iniciar Sesión" onPress={() => console.log("Iniciar Sesión")} />
-
-        {/* Texto para crear una cuenta */}
-        <View style={styles.signUpContainer}>
-          <Text style={styles.signUpText}>¿No tienes una cuenta? </Text>
-          <TouchableOpacity onPress={() => router.replace('auth/sign-up')}>
-            <Text style={styles.signUpLink}>Crear Cuenta</Text>
-          </TouchableOpacity>
+        {/*USUSARIO O EMAIL */}
+        <View style={{
+          marginTop:50
+        }}>
+          <Text style={{
+            fontSize:20,
+            color:Colors.PRINCIPAL,
+            fontWeight: '500'
+          }}>Usuario o Gmail</Text>
+          <TextInput
+            style={styles.input}
+            onChangeText={(value)=>setEmail(value)}
+            placeholder='Ingresa tu usuario o gmail'/>
         </View>
 
-        {/* Separador */}
-        <Separator />
+        {/*CONTRASEÑA */}
+        <View style={{
+          marginTop:50
+        }}>
+          <Text style={{
+            fontSize:20,
+            color:Colors.PRINCIPAL,
+            fontWeight: '500'
+          }}>Contraseña</Text>
+          <TextInput
+            secureTextEntry={true}
+            style={styles.input}
+            onChangeText={(value)=>setPassword(value)}
+            placeholder='Ingresa tu contraseña'/>
+            <Text style={{
+              color:Colors.BLACK,
+              textAlign:'right',
+              marginTop:10,
+              fontWeight: '600'
+            }}>Olvidaste tu contraseña?</Text>
+        </View>
 
-        {/* Botones de métodos alternativos */}
-        <PrimaryButton
-          title="Registrarse con número de teléfono"
-          onPress={() => console.log("Registrarse con número de teléfono")}
-          style={styles.secondaryButton}
-        />
-        <PrimaryButton
-          title="Registrarse con Google"
-          onPress={() => console.log("Registrarse con Google")}
-          style={styles.secondaryButton}
-        />
-      </View>
-    </ScrollView>
-  );
+        {/*BOTON INICIAR SESION */}
+        <TouchableOpacity onPress={onSignIn} style={{
+          padding:15,
+          backgroundColor:Colors.PRINCIPAL,
+          borderRadius:15,
+          marginTop:30
+        }}>
+          <Text style={{
+            color:Colors.BLACK,
+            textAlign:'center',
+            fontSize:20
+          }}>Iniciar Sesion</Text>
+        </TouchableOpacity>
+
+        {/*BOTON CREAR CUENTA */}
+        <View style={{
+          marginTop:15
+        }}>
+          <Text style={{
+            color:Colors.BLACK,
+            fontSize:20
+          }}>No tienes una cuenta? <TouchableOpacity
+            onPress={() => router.replace('auth/sign-up')}
+            style={{
+            color:Colors.PRINCIPAL,
+            fontSize:20,
+            fontWeight: '500'
+          }}>Crear Cuenta</TouchableOpacity></Text>
+        </View>
+
+        <View style={styles.separatorContainer}>
+          <View style={styles.line} />
+          <Text style={styles.separatorText}>O</Text>
+          <View style={styles.line} />
+        </View>
+
+
+        {/*BOTON INICIAR CON NUMERO DE TELEFONO */}
+        <View style={{
+          padding:15,
+          backgroundColor:Colors.WHITE,
+          borderRadius:15,
+          marginTop:30,
+          borderWidth:1
+        }}>
+          <Text style={{
+            color:Colors.BLACK,
+            textAlign:'center',
+            fontSize:20
+          }}>Registrarse con numero de telefono</Text>
+        </View>
+
+        {/*BOTON INICIAR CON GMAIL */}
+        <View style={{
+          padding:15,
+          backgroundColor:Colors.WHITE,
+          borderRadius:15,
+          marginTop:20,
+          borderWidth:1
+        }}>
+          <Text style={{
+            color:Colors.BLACK,
+            textAlign:'center',
+            fontSize:20
+          }}>Registrarse con google</Text>
+        </View>
+
+    </View>
+  )
 }
 
-// Estilos
 const styles = StyleSheet.create({
-  scrollContainer: {
-    flexGrow: 1,
-  },
-  container: {
-    padding: 25,
-    marginTop: 60,
-  },
-  title: {
-    fontSize: 50,
-    fontFamily: 'outfit-bold',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  highlight: {
-    color: '#63D2D9',
-  },
-  subtitle: {
-    fontSize: 30,
-    fontFamily: 'outfit-bold',
-    color: Colors.GRAY,
-    marginTop: 15,
-  },
-  inputContainer: {
-    marginTop: 50,
-  },
-  label: {
-    fontSize: 20,
-    color: Colors.PRINCIPAL,
-    fontWeight: '500',
-  },
-  input: {
-    padding: 15,
-    borderWidth: 1,
-    borderRadius: 15,
-    marginTop: 10,
-    borderColor: Colors.GRAY,
-    fontFamily: 'outfit',
-  },
-  forgotPasswordText: {
-    color: Colors.BLACK,
-    textAlign: 'right',
-    marginTop: 10,
-    fontWeight: '600',
-  },
-  primaryButton: {
-    padding: 15,
-    backgroundColor: Colors.PRINCIPAL,
-    borderRadius: 15,
-    marginTop: 30,
-  },
-  buttonText: {
-    color: Colors.BLACK,
-    textAlign: 'center',
-    fontSize: 20,
-  },
-  signUpContainer: {
-    marginTop: 15,
-    flexDirection: 'row',
-  },
-  signUpText: {
-    fontSize: 20,
-    color: Colors.BLACK,
-  },
-  signUpLink: {
-    color: Colors.PRINCIPAL,
-    fontSize: 20,
-    fontWeight: '500',
+  input:{
+    padding:15,
+    borderWidth:1,
+    borderRadius:15,
+    marginTop:10,
+    borderColor:Colors.GRAY,
+    fontFamilys:'outfit'
   },
   separatorContainer: {
-    marginTop: 30,
+    marginTop:30,
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 20,  // Ajusta el margen según necesites
   },
   line: {
-    flex: 1,
+    flex: 1,  // Esto hace que la línea se ajuste al espacio disponible
     height: 1,
-    backgroundColor: Colors.GRAY,
+    backgroundColor: Colors.GRAY,  // Color de la línea
   },
   separatorText: {
-    marginHorizontal: 10,
+    marginHorizontal: 10,  // Espacio a los lados de la "O"
     fontSize: 18,
-    color: Colors.BLACK,
-  },
-  secondaryButton: {
-    backgroundColor: Colors.WHITE,
-    borderWidth: 1,
-    borderColor: Colors.GRAY,
+    color: Colors.BLACK,  // Color del texto
   },
 });

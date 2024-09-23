@@ -1,18 +1,65 @@
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import React, { useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, ToastAndroid } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { useNavigation, useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { MaterialIcons } from '@expo/vector-icons';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './../../../configs/FirebaseConfig';
 
 export default function SignUp() {
   const navigation = useNavigation();
   const router = useRouter();
+
+  // Estados para los campos del formulario
+  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
   }, []);
+
+
+  const OncreateAccount=()=>{
+
+    //VALIDACION DE CAMPOS VACIOS
+    if (!fullName || !username || !email || !phoneNumber || !password || !confirmPassword) {
+      alert("Por favor, completa todos los campos");
+      return;
+    }
+
+    //VALIDACION DE EMAIL
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRegex.test(email)){
+      alert("Por favor, ingresa un correo electrónico válido");
+      return;
+    }
+
+    //VALIDACION DE CONTRASEÑA
+    if(password !== confirmPassword){
+      alert("Las contraseñas no coinciden");
+      return;
+    }
+
+    createUserWithEmailAndPassword(auth, email, password)
+  .then((userCredential) => {
+    // Signed in 
+    const user = userCredential.user;
+    console.log(user);
+    // ...
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    console.log("--",errorMessage, errorCode);
+    // ..
+  });
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -33,41 +80,48 @@ export default function SignUp() {
         {/* NOMBRE COMPLETO */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Nombre completo</Text>
-          <TextInput style={styles.input} placeholder="Ingresa tu nombre completo" />
+          <TextInput style={styles.input} placeholder="Ingresa tu nombre completo" 
+          onChangeText={(value)=>setFullName(value)}/>
         </View>
 
         {/* NOMBRE DE USUARIO */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Nombre de usuario</Text>
-          <TextInput style={styles.input} placeholder="Ingresa tu nombre de usuario" />
+          <TextInput style={styles.input} placeholder="Ingresa tu nombre de usuario" 
+          onChangeText={(value)=>setUsername(value)}/>
         </View>
 
         {/* EMAIL */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Correo electrónico</Text>
-          <TextInput style={styles.input} placeholder="Ingresa tu correo electrónico" />
+          <TextInput style={styles.input} placeholder="Ingresa tu correo electrónico"
+          onChangeText={(value)=>setEmail(value)} />
         </View>
 
         {/* TELEFONO */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Número de teléfono</Text>
-          <TextInput style={styles.input} placeholder="Ingresa tu número de teléfono" />
+          <TextInput style={styles.input} placeholder="Ingresa tu número de teléfono"
+          onChangeText={(value)=>setPhoneNumber(value)} />
         </View>
 
         {/* CREAR CONTRASEÑA */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Crear contraseña</Text>
-          <TextInput secureTextEntry={true} style={styles.input} placeholder="Ingresa tu nueva contraseña" />
+          <TextInput secureTextEntry={true} style={styles.input} placeholder="Ingresa tu nueva contraseña" 
+          onChangeText={(value)=>setPassword(value)}/>
         </View>
 
         {/* CONFIRMAR CONTRASEÑA */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Confirmar contraseña</Text>
-          <TextInput secureTextEntry={true} style={styles.input} placeholder="Confirma tu nueva contraseña" />
+          <TextInput secureTextEntry={true} style={styles.input} placeholder="Confirma tu nueva contraseña"
+          onChangeText={(value)=>setConfirmPassword(value)} />
         </View>
 
         {/* BOTON CREAR CUENTA */}
-        <TouchableOpacity style={styles.createAccountButton}>
+        <TouchableOpacity onPress={OncreateAccount}
+        style={styles.createAccountButton}>
           <Text style={styles.createAccountButtonText}>Crear Cuenta</Text>
         </TouchableOpacity>
       </View>
