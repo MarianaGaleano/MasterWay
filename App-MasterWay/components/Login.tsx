@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 50,
-    fontFamily: 'outfit-bold',
+    fontFamily: 'popins-bold',
     textAlign: 'center',
     marginTop: 10,
   },
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     color: '#63D2D9',
   },
   description: {
-    fontFamily: 'outfit-regular',
+    fontFamily: 'popins',
     fontSize: 20,
     textAlign: 'center',
     color: Colors.GRAY,
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   buttonText: {
     textAlign: 'center',
     color: Colors.WHITE,
-    fontFamily: 'outfit-bold',
+    fontFamily: 'popins-bold',
     fontSize: 20,
   },
 });

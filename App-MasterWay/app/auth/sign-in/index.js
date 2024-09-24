@@ -63,14 +63,13 @@ export default function SingIn() {
     }}>
       <Text style={{
           fontSize:50,
-          fontFamily:'outfit-bold',
-          textAlign: 'center',
-          fontWeight: 'bold'
+          fontFamily:'popins-bold',
+          textAlign: 'center'
         }}>Master<Text style={{ color: '#63D2D9' }}>Way</Text></Text>
 
       <Text style={{
           fontSize:30,
-          fontFamily:'outfit-bold',
+          fontFamily:'popins-bold',
           color:Colors.GRAY,
           marginTop:15
         }}>Inicia Sesion</Text>
@@ -82,7 +81,8 @@ export default function SingIn() {
           <Text style={{
             fontSize:20,
             color:Colors.PRINCIPAL,
-            fontWeight: '500'
+            fontWeight: '500',
+            fontFamily:'popins-bold'
           }}>Usuario o Gmail</Text>
           <TextInput
             style={styles.input}
@@ -97,7 +97,8 @@ export default function SingIn() {
           <Text style={{
             fontSize:20,
             color:Colors.PRINCIPAL,
-            fontWeight: '500'
+            fontWeight: '500',
+            fontFamily:'popins-bold'
           }}>Contraseña</Text>
           <TextInput
             secureTextEntry={true}
@@ -117,12 +118,14 @@ export default function SingIn() {
           padding:15,
           backgroundColor:Colors.PRINCIPAL,
           borderRadius:15,
-          marginTop:30
+          marginTop:30,
+          fontFamily:'popins-bold'
         }}>
           <Text style={{
             color:Colors.BLACK,
             textAlign:'center',
-            fontSize:20
+            fontSize:20,
+            fontFamily:'popins-bold'
           }}>Iniciar Sesion</Text>
         </TouchableOpacity>
 
@@ -132,13 +135,15 @@ export default function SingIn() {
         }}>
           <Text style={{
             color:Colors.BLACK,
-            fontSize:20
+            fontSize:15,
+            fontFamily:'popins'
           }}>No tienes una cuenta? <TouchableOpacity
             onPress={() => router.replace('auth/sign-up')}
             style={{
             color:Colors.PRINCIPAL,
-            fontSize:20,
-            fontWeight: '500'
+            fontSize:15,
+            fontWeight: '500',
+            fontFamily:'popins-bold'
           }}>Crear Cuenta</TouchableOpacity></Text>
         </View>
 
@@ -160,7 +165,8 @@ export default function SingIn() {
           <Text style={{
             color:Colors.BLACK,
             textAlign:'center',
-            fontSize:20
+            fontSize:15,
+            fontFamily:'popins-bold'
           }}>Registrarse con numero de telefono</Text>
         </View>
 
@@ -175,7 +181,8 @@ export default function SingIn() {
           <Text style={{
             color:Colors.BLACK,
             textAlign:'center',
-            fontSize:20
+            fontSize:15,
+            fontFamily:'popins-bold'
           }}>Registrarse con google</Text>
         </View>
 
@@ -190,7 +197,7 @@ const styles = StyleSheet.create({
     borderRadius:15,
     marginTop:10,
     borderColor:Colors.GRAY,
-    fontFamilys:'outfit'
+    fontFamily:'poppins'
   },
   separatorContainer: {
     marginTop:30,

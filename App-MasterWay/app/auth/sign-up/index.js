@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontFamily: 'outfit-bold',
+    fontFamily: 'popins-bold',
     fontSize: 30,
     fontWeight: '600',
     marginLeft: 10, 
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginTop: 10,
     borderColor: Colors.GRAY,
-    fontFamily: 'outfit',
+    fontFamily: 'popins',
   },
   createAccountButton: {
     padding: 15,
@@ -170,5 +170,6 @@ const styles = StyleSheet.create({
     color: Colors.BLACK,
     textAlign: 'center',
     fontSize: 20,
+    fontFamily:'popins-bold'
   },
 });
