@@ -48,9 +48,10 @@ export default function SignUp() {
 
     createUserWithEmailAndPassword(auth, email, password)
   .then((userCredential) => {
-    // Signed in 
+    // Signed up
     const user = userCredential.user;
     console.log(user);
+    router.replace('/mytrip')
     // ...
   })
   .catch((error) => {

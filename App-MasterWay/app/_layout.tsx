@@ -11,10 +11,13 @@ export default function RootLayout() {
   })
   
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{
+    <Stack screenOptions={{
       headerShown: false
-    }} />
+    }}>
+      {/*<Stack.Screen name="index" options={{
+      headerShown: false
+      }} />*/}
+      <Stack.Screen name="(tabs)"/>
     </Stack>
   );
 }
