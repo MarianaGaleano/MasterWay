@@ -10,7 +10,6 @@ export default function RootLayout() {
     'popins-medium': require('./../assets/fonts/Poppins-Medium.ttf')
   })
   
-
   return (
     <Stack>
       <Stack.Screen name="index" options={{

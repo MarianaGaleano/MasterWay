@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     padding: 25,
   },
   title: {
-    fontSize: 50,
+    fontSize: 45,
     fontFamily: 'popins-bold',
     textAlign: 'center',
     marginTop: 10,
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontFamily: 'popins',
-    fontSize: 20,
+    fontSize: 15,
     textAlign: 'center',
     color: Colors.GRAY,
     marginTop: 20,
