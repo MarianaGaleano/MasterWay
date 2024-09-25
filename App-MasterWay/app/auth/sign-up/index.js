@@ -1,10 +1,11 @@
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, ToastAndroid } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useNavigation, useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from './../../../configs/FirebaseConfig';
+import { auth, db } from './../../../configs/FirebaseConfig'; 
+import { setDoc, doc, query, where, getDocs, collection } from 'firebase/firestore';
 
 export default function SignUp() {
   const navigation = useNavigation();
@@ -13,10 +14,13 @@ export default function SignUp() {
   // Estados para los campos del formulario
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [usernameAvailable, setUsernameAvailable] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordsMatch, setPasswordsMatch] = useState(null); // Estado para verificar si coinciden
+  const [loading, setLoading] = useState(false); // Estado de carga
 
   useEffect(() => {
     navigation.setOptions({
@@ -24,53 +28,106 @@ export default function SignUp() {
     });
   }, []);
 
+  // Función para verificar si el nombre de usuario ya existe en Firestore
+  const checkUsername = async (username) => {
+    if (!username) return;
+    const q = query(collection(db, 'users'), where('username', '==', username));
+    const querySnapshot = await getDocs(q);
+    setUsernameAvailable(querySnapshot.empty); // true si está disponible, false si ya está tomado
+  };
 
-  const OncreateAccount=()=>{
+  // Escucha los cambios en el nombre de usuario y verifica su disponibilidad
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (username) {
+        checkUsername(username);
+      }
+    }, 500); // Esperar 500ms para no hacer consultas cada vez que el usuario teclea
 
-    //VALIDACION DE CAMPOS VACIOS
-    if (!fullName || !username || !email || !phoneNumber || !password || !confirmPassword) {
+    return () => clearTimeout(timer); // Limpiar el timer en cada cambio
+  }, [username]);
+
+  // Verificación de si las contraseñas coinciden
+  useEffect(() => {
+    if (password && confirmPassword) {
+      setPasswordsMatch(password === confirmPassword);
+    }
+  }, [password, confirmPassword]);
+
+  // Validar el formato del correo electrónico
+  const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
+  
+  // Validar el formato del número de teléfono
+  const validatePhoneNumber = (phone) => /^\d{10}$/.test(phone); // Ejemplo para números de 10 dígitos
+
+  const onCreateAccount = async () => {
+    if (!fullName || !username || !phoneNumber || !email || !password || !confirmPassword) {
       alert("Por favor, completa todos los campos");
       return;
     }
 
-    //VALIDACION DE EMAIL
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if(!emailRegex.test(email)){
-      alert("Por favor, ingresa un correo electrónico válido");
-      return;
-    }
-
-    //VALIDACION DE CONTRASEÑA
-    if(password !== confirmPassword){
+    if (password !== confirmPassword) {
       alert("Las contraseñas no coinciden");
       return;
     }
 
-    createUserWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
-    // Signed up
-    const user = userCredential.user;
-    console.log(user);
-    router.replace('/mytrip')
-    // ...
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    console.log("--",errorMessage, errorCode);
-    // ..
-  });
-  }
+    if (usernameAvailable === false) {
+      alert("El nombre de usuario ya está en uso. Por favor, elige otro.");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      alert("Por favor, ingresa un correo electrónico válido.");
+      return;
+    }
+
+    if (!validatePhoneNumber(phoneNumber)) {
+      alert("Por favor, ingresa un número de teléfono válido.");
+      return;
+    }
+
+    setLoading(true); // Activar estado de carga
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, 'users', user.uid), {
+        fullName,
+        username,
+        phoneNumber,
+        email,
+        createdAt: new Date(),
+      });
+
+      alert("Cuenta creada exitosamente");
+      router.replace('/home');
+    } catch (error) {
+      // Manejo de errores
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          alert('Este correo electrónico ya está en uso.');
+          break;
+        case 'auth/invalid-email':
+          alert('El correo electrónico no es válido.');
+          break;
+        case 'auth/weak-password':
+          alert('La contraseña es muy débil. Debe tener al menos 6 caracteres.');
+          break;
+        default:
+          alert(`Error al crear la cuenta: ${error.message}`);
+      }
+    } finally {
+      setLoading(false); // Desactivar estado de carga
+    }
+  };
+
+  const isFormValid = fullName && username && phoneNumber && email && password && confirmPassword && 
+                      passwordsMatch && usernameAvailable;
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <View
-        style={{
-          padding: 25,
-          paddingTop: 50,
-        }}
-      >
-        {/* Flecha de regreso y titulo */}
+      <View style={{ padding: 25, paddingTop: 50 }}>
         <View style={styles.headerContainer}>
           <TouchableOpacity onPress={() => router.replace('auth/sign-in')}>
             <MaterialIcons name="arrow-back" size={24} color="black" />
@@ -81,49 +138,85 @@ export default function SignUp() {
         {/* NOMBRE COMPLETO */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Nombre completo</Text>
-          <TextInput style={styles.input} placeholder="Ingresa tu nombre completo" 
-          onChangeText={(value)=>setFullName(value)}/>
+          <TextInput
+            style={styles.input}
+            placeholder="Ingresa tu nombre completo"
+            onChangeText={setFullName}
+          />
         </View>
 
         {/* NOMBRE DE USUARIO */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Nombre de usuario</Text>
-          <TextInput style={styles.input} placeholder="Ingresa tu nombre de usuario" 
-          onChangeText={(value)=>setUsername(value)}/>
-        </View>
-
-        {/* EMAIL */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Correo electrónico</Text>
-          <TextInput style={styles.input} placeholder="Ingresa tu correo electrónico"
-          onChangeText={(value)=>setEmail(value)} />
+          <TextInput
+            style={styles.input}
+            placeholder="Ingresa tu nombre de usuario"
+            onChangeText={setUsername}
+          />
+          {username && (
+            <Text
+              style={[styles.usernameCheck, { color: usernameAvailable === null ? 'black' : usernameAvailable ? 'green' : 'red' }]}
+            >
+              {usernameAvailable === null ? 'Verificando...' :
+                usernameAvailable ? 'Nombre de usuario disponible' : 'Nombre de usuario no disponible'}
+            </Text>
+          )}
         </View>
 
         {/* TELEFONO */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Número de teléfono</Text>
-          <TextInput style={styles.input} placeholder="Ingresa tu número de teléfono"
-          onChangeText={(value)=>setPhoneNumber(value)} />
+          <TextInput
+            style={styles.input}
+            placeholder="Ingresa tu número de teléfono"
+            onChangeText={setPhoneNumber}
+          />
+        </View>
+
+        {/* EMAIL */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Correo electrónico</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Ingresa tu correo electrónico"
+            onChangeText={setEmail}
+          />
         </View>
 
         {/* CREAR CONTRASEÑA */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Crear contraseña</Text>
-          <TextInput secureTextEntry={true} style={styles.input} placeholder="Ingresa tu nueva contraseña" 
-          onChangeText={(value)=>setPassword(value)}/>
+          <TextInput
+            secureTextEntry
+            style={styles.input}
+            placeholder="Ingresa tu nueva contraseña"
+            onChangeText={setPassword}
+          />
         </View>
 
         {/* CONFIRMAR CONTRASEÑA */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Confirmar contraseña</Text>
-          <TextInput secureTextEntry={true} style={styles.input} placeholder="Confirma tu nueva contraseña"
-          onChangeText={(value)=>setConfirmPassword(value)} />
+          <TextInput
+            secureTextEntry
+            style={styles.input}
+            placeholder="Confirma tu nueva contraseña"
+            onChangeText={setConfirmPassword}
+          />
+          {/* Mostrar mensaje de coincidencia de contraseñas */}
+          {confirmPassword && (
+            <Text
+              style={[styles.passwordCheck, { color: passwordsMatch === null ? 'black' : passwordsMatch ? 'green' : 'red' }]}
+            >
+              {passwordsMatch === null ? '' :
+                passwordsMatch ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden'}
+            </Text>
+          )}
         </View>
 
         {/* BOTON CREAR CUENTA */}
-        <TouchableOpacity onPress={OncreateAccount}
-        style={styles.createAccountButton}>
-          <Text style={styles.createAccountButtonText}>Crear Cuenta</Text>
+        <TouchableOpacity onPress={onCreateAccount} style={styles.createAccountButton} disabled={loading || !isFormValid}>
+          <Text style={styles.createAccountButtonText}>{loading ? 'Cargando...' : 'Crear Cuenta'}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -135,15 +228,15 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   headerContainer: {
-    flexDirection: 'row', 
-    alignItems: 'center', 
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
   },
   title: {
     fontFamily: 'popins-bold',
     fontSize: 30,
     fontWeight: '600',
-    marginLeft: 10, 
+    marginLeft: 10,
   },
   inputContainer: {
     marginTop: 30,
@@ -161,16 +254,25 @@ const styles = StyleSheet.create({
     borderColor: Colors.GRAY,
     fontFamily: 'popins',
   },
+  usernameCheck: {
+    marginTop: 5,
+    fontSize: 16,
+  },
+  passwordCheck: {
+    marginTop: 5,
+    fontSize: 16,
+  },
   createAccountButton: {
-    padding: 15,
-    backgroundColor: Colors.PRINCIPAL,
-    borderRadius: 15,
     marginTop: 30,
+    backgroundColor: Colors.PRINCIPAL,
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: 'center',
   },
   createAccountButtonText: {
     color: Colors.BLACK,
     textAlign: 'center',
     fontSize: 20,
-    fontFamily:'popins-bold'
+    fontFamily: 'popins-bold',
   },
 });

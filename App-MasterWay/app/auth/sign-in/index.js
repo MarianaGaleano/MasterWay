@@ -11,6 +11,7 @@ export default function SingIn() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
       navigation.setOptions({
@@ -20,8 +21,8 @@ export default function SingIn() {
 
   const onSignIn=()=>{
 
-    if(!email || !password){
-      alert("Por favor, completa todos los campos");
+    if (!email || !password) {
+      setErrorMessage("Por favor, completa todos los campos");
       return;
     }
 
@@ -29,7 +30,7 @@ export default function SingIn() {
   .then((userCredential) => {
     // Signed in 
     const user = userCredential.user;
-    router.replace('/mytrip')
+    router.replace('/home')
     console.log(user);
     // ...
   })
@@ -38,6 +39,9 @@ export default function SingIn() {
     const errorMessage = error.message;
     console.log("--",errorMessage, errorCode);
     // ..
+    if (errorCode === 'auth/invalid-credential') {
+      setErrorMessage("Error al iniciar sesión. Por favor, verifica tus datos.");
+    }
   });
   }
 
@@ -75,7 +79,7 @@ export default function SingIn() {
           marginTop:15
         }}>Inicia Sesion</Text>
 
-        {/*USUSARIO O EMAIL */}
+        {/*EMAIL */}
         <View style={{
           marginTop:50
         }}>
@@ -88,7 +92,7 @@ export default function SingIn() {
           <TextInput
             style={styles.input}
             onChangeText={(value)=>setEmail(value)}
-            placeholder='Ingresa tu usuario o gmail'/>
+            placeholder='Ingresa tu Email'/>
         </View>
 
         {/*CONTRASEÑA */}
@@ -106,11 +110,15 @@ export default function SingIn() {
             style={styles.input}
             onChangeText={(value)=>setPassword(value)}
             placeholder='Ingresa tu contraseña'/>
+            {/* MENSAJE DE ERROR */}
+          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+          {/* BOTON RECUPERAR CONTRASEÑA */}
             <TouchableOpacity onPress={handleForgotPassword} style={{
               color:Colors.BLACK,
+              fontSize:15,
+              fontFamily:'popins-bold',
               textAlign:'right',
-              marginTop:10,
-              fontWeight: '600'
+              marginTop:10 
             }}>Olvidaste tu contraseña?</TouchableOpacity>
         </View>
 
@@ -215,5 +223,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,  // Espacio a los lados de la "O"
     fontSize: 18,
     color: Colors.BLACK,  // Color del texto
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 10,
+    fontSize: 16,
   },
 });
