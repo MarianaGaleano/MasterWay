@@ -118,7 +118,7 @@ export default function SingIn() {
               fontSize:15,
               fontFamily:'popins-bold',
               textAlign:'right',
-              marginTop:10 
+              marginTop:10
             }}>Olvidaste tu contraseña?</TouchableOpacity>
         </View>
 
