@@ -9,81 +9,99 @@ export default function TabLayout() {
     <Tabs screenOptions={{
       headerShown: false,
       tabBarShowLabel: false,
-      tabBarStyle: {
+      tabBarStyle:{
         position: "absolute",
         bottom: 20,
         left: 16,
         right: 16,
-        height: 70,
-        elevation: 5,
+        height: 72,
+        elevation: 0,
         backgroundColor: Colors.WHITE,
         borderRadius: 16,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 5 },
       }
     }}>
-      {/* Pestaña de Inicio */}
+      
+      {/* MyTrip */}
       <Tabs.Screen
-        name="mytrip"
+        name="home"
         options={{
           tabBarIcon: ({ focused }) => (
             <View style={{
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <Ionicons 
-                name={focused ? 'home' : 'home-outline'}
-                color={focused ? Colors.PRINCIPAL : Colors.GRAY} 
-                size={28} 
+              <Ionicons name={focused ? 'home' : 'home-outline'}
+              color={focused ? Colors.PRINCIPAL : Colors.GRAY} 
+              size={24} 
               />
-              <Text style={{ 
-                color: focused ? Colors.PRINCIPAL : Colors.GRAY, 
-                fontSize: 14,  
-                marginTop: 4 
-              }}>Inicio</Text>
+              <Text style={{ color: focused ? Colors.PRINCIPAL : Colors.GRAY, fontSize: 12, marginTop: 4 }}>Inicio</Text>
             </View>
           ),
         }}
       />
 
-      {/* Botón Central de Agregar */}
+      {/* Favorites */}
       <Tabs.Screen
-        name="discover"
+        name="favorites"
         options={{
           tabBarIcon: ({ focused }) => (
             <View style={{
               alignItems: 'center',
               justifyContent: 'center',
-              height: 80,  
-              width: 80,
-              borderRadius: 40, 
+            }}>
+              <Ionicons name={focused ? 'heart' : 'heart-outline'}
+              color={focused ? Colors.PRINCIPAL : Colors.GRAY} 
+              size={24} 
+              />
+              <Text style={{ color: focused ? Colors.PRINCIPAL : Colors.GRAY, fontSize: 12, marginTop: 4 }}>Favoritos</Text>
+            </View>
+          ),
+        }}
+      />
+
+      {/* Discover */}
+      <Tabs.Screen
+        name="add"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <View style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: 65,
+              width: 65,
+              borderRadius: 999,
               backgroundColor: Colors.PRINCIPAL,
-              marginBottom: 30,  
-              shadowColor: '#000',
-              shadowOpacity: 0.2,
-              shadowRadius: 10,
-              shadowOffset: { width: 0, height: 5 },
+              marginBottom: 30, // Subir un poquito el botón
             }}>
-              <Ionicons 
-                name='add' 
-                color='white' 
-                size={32}  
+              <Ionicons name='add'
+              color='white' 
+              size={40} 
               />
-              {/* Agregar texto debajo del ícono */}
-              <Text style={{ 
-                color: focused ? Colors.BLACK : 'white', 
-                fontSize: 12, 
-                marginTop: 4,
-                textAlign: 'center'
-              }}>Agregar</Text>
             </View>
           ),
         }}
       />
 
-      {/* Pestaña de Perfil */}
+      {/* Dashboard */}
+      <Tabs.Screen
+        name="dashboard"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <View style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Ionicons name={focused ? 'grid' : 'grid-outline'}
+              color={focused ? Colors.PRINCIPAL : Colors.GRAY} 
+              size={24} 
+              />
+              <Text style={{ color: focused ? Colors.PRINCIPAL : Colors.GRAY, fontSize: 12, marginTop: 4 }}>Dashboard</Text>
+            </View>
+          ),
+        }}
+      />
+
+      {/* Profile */}
       <Tabs.Screen
         name="profile"
         options={{
@@ -92,20 +110,16 @@ export default function TabLayout() {
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <Ionicons 
-                name={focused ? 'person' : 'person-outline'}
-                color={focused ? Colors.PRINCIPAL : Colors.GRAY} 
-                size={28}  
+              <Ionicons name={focused ? 'person' : 'person-outline'}
+              color={focused ? Colors.PRINCIPAL : Colors.GRAY} 
+              size={24} 
               />
-              <Text style={{ 
-                color: focused ? Colors.PRINCIPAL : Colors.GRAY, 
-                fontSize: 14, 
-                marginTop: 4 
-              }}>Perfil</Text>
+              <Text style={{ color: focused ? Colors.PRINCIPAL : Colors.GRAY, fontSize: 12, marginTop: 4 }}>Perfil</Text>
             </View>
           ),
         }}
       />
+
     </Tabs>
   );
 }
