@@ -3,8 +3,14 @@ import React from 'react'
 
 export default function favorites() {
   return (
-    <View>
-      <Text>favorites</Text>
+    <View style={{
+      padding:20, 
+      marginTop:20
+    }}>
+      <Text style={{
+        fontFamily: 'popins-bold',
+        fontSize: 30
+      }}>Favoritos</Text>
     </View>
   )
 }
