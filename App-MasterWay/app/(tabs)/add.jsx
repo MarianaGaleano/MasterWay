@@ -1,12 +1,16 @@
 import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import Icon from 'react-native-vector-icons/FontAwesome'; 
+import { useRouter } from 'expo-router';
 import React from 'react';
 
 // Placeholder de imagen de perfil, la puedes cambiar por una real
 const profileImage = 'https://via.placeholder.com/40';
 
 export default function Discover() {
+
+  const router = useRouter();
+
   return (
     <KeyboardAvoidingView 
       style={{ flex: 1 }} 
@@ -21,7 +25,7 @@ export default function Discover() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate('home')}>
+        <TouchableOpacity onPress={() => router.replace('/home')}>
           <Icon name="arrow-left" size={25} color={Colors.BLACK} />
         </TouchableOpacity>
         <View style={styles.titleContainer}>

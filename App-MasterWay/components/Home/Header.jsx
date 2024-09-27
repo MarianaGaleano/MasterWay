@@ -33,10 +33,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 25,
     fontFamily: 'popins-bold',
+    fontSize: 30,
     textAlign: 'center',
-    marginTop: 10,
   },
   highlight: {
     color: Colors.PRINCIPAL,
@@ -44,6 +43,6 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 65,
     height: 65,
-    borderRadius: 50, // Hace la imagen circular
+    borderRadius: 50,
   },
 });
