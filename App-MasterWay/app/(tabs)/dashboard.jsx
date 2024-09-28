@@ -6,7 +6,7 @@ import { auth } from './../../configs/FirebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';  
 import { db } from './../../configs/FirebaseConfig';
 
-export default function dashboard() {
+export default function Dashboard() {
   const router = useRouter();
   const [userData, setUserData] = useState(null);
 
@@ -39,7 +39,9 @@ export default function dashboard() {
               <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">
                 {userData.username}
               </Text>
-              <Text style={styles.description}>Descripción breve sobre el usuario.</Text>
+              <Text style={styles.description}>
+                {userData.description || 'Descripción breve sobre el usuario.'}
+              </Text>
               <Text style={styles.interest}>Interés: Tecnología</Text>
             </View>
           )}
