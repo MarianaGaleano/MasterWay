@@ -1,10 +1,10 @@
 import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native'
 import React from 'react';
-import { useNavigation } from 'expo-router'
+import { Link, useNavigation} from 'expo-router'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
-import './calendar_comp.css';
+import '../../components/calendar/calendar_comp';
 
 export default function Index() {
   const navigation=useNavigation();
@@ -42,10 +42,17 @@ export default function Index() {
             renderInput={(params) => <TextField {...params} />} />
         </LocalizationProvider></></>
         
-        <TouchableOpacity onPress={() => router.replace('/components/Add_event')}
+        <Link href={'/app/components/calendar/Add_event'}
+        style={{
+          width: '100%',
+          textAlign: 'center'
+        }}
+        >
+        <TouchableOpacity
           style={styles.button}>
         <Text style={styles.buttonText}>Agregar evento</Text>
-      </TouchableOpacity></>
+        </TouchableOpacity>
+        </Link></>
   );
 }
 
@@ -76,9 +83,9 @@ const styles = StyleSheet.create({
   },
   button: {
       backgroundColor: '#63D2D9',
-      paddingVertical: 15,
+      padding: 15,
       borderRadius: 25,
-      alignItems: 'center',
+      marginTop: 20
   },
   buttonText: {
       color: '#FFFFFF',
