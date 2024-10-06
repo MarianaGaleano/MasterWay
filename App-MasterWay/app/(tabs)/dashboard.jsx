@@ -59,7 +59,6 @@ export default function Dashboard() {
       <Text style={styles.title}>Calendario</Text>
         </View>
 
-{/* Suggested code may be subject to a license. Learn more: ~LicenseLog:2075919939. */}
         <TouchableOpacity onPress={() => router.replace('/calendar')}
          style={[styles.button, styles.editProfile]}>
           <Text style={styles.editProfileText}>Calendario</Text>

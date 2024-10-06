@@ -1,13 +1,14 @@
 import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native'
 import React from 'react';
-import { Link, useNavigation} from 'expo-router'
+import { Link, useRouter, useNavigation} from 'expo-router';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
-import '../../components/calendar/calendar_comp';
+import './calendar_com/calendar_comp';
 
-export default function Index() {
+export default function Calendar() {
   const navigation=useNavigation();
+  const router = useRouter();
   const backImage = 'https://via.placeholder.com/40';
   const profileImage = 'https://via.placeholder.com/40';
   const [value, setValue] = React.useState(new Date());
@@ -15,7 +16,7 @@ export default function Index() {
   return (
     <><><View style={styles.container}>
 
-      <TouchableOpacity onPress={() => navigation.navigate('dashboard')}>
+      <TouchableOpacity onPress={() => router.replace('../(tabs)/dashboard')}>
         <Image
           source={{ uri: backImage }}
           style={styles.backImage} />
@@ -23,7 +24,7 @@ export default function Index() {
 
       <Text style={styles.title}>Calendario</Text>
 
-      <TouchableOpacity onPress={() => navigation.navigate('profile')}>
+      <TouchableOpacity onPress={() => router.replace('../(tabs)/profile')}>
         <Image
           source={{ uri: profileImage }}
           style={styles.profileImage} />
@@ -42,17 +43,10 @@ export default function Index() {
             renderInput={(params) => <TextField {...params} />} />
         </LocalizationProvider></></>
         
-        <Link href={'/app/components/calendar/Add_event'}
-        style={{
-          width: '100%',
-          textAlign: 'center'
-        }}
-        >
-        <TouchableOpacity
+        <TouchableOpacity onPress={() => router.replace('/calendar_com/Add_Event')}
           style={styles.button}>
         <Text style={styles.buttonText}>Agregar evento</Text>
-        </TouchableOpacity>
-        </Link></>
+        </TouchableOpacity></>
   );
 }
 
@@ -83,8 +77,8 @@ const styles = StyleSheet.create({
   },
   button: {
       backgroundColor: '#63D2D9',
-      padding: 15,
-      borderRadius: 25,
+      padding: 20,
+      borderRadius: 10,
       marginTop: 20
   },
   buttonText: {
