@@ -43,7 +43,7 @@ export default function Calendar() {
             renderInput={(params) => <TextField {...params} />} />
         </LocalizationProvider></></>
         
-        <TouchableOpacity onPress={() => router.replace('/calendar_com/Add_event')}
+        <TouchableOpacity onPress={() => router.replace('../components/calendar_com/Add_event')}
           style={styles.button}>
         <Text style={styles.buttonText}>Agregar evento</Text>
         </TouchableOpacity></>
