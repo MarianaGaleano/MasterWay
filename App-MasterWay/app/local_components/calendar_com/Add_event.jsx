@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
-import { auth } from './../../configs/FirebaseConfig';  
+import { auth } from '../../../configs/FirebaseConfig';  
 import { doc, getDoc, updateDoc } from 'firebase/firestore';  
-import { db } from './../../configs/FirebaseConfig';
+import { db } from '../../../configs/FirebaseConfig';
 
 export default function Add_Event() {
   const router = useRouter();
