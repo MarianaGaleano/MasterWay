@@ -27,4 +27,10 @@ export const Colors = {
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
   },
+  
+  LIGHT_PRIMARY: '#63D2D9',  // Color primario claro
+  PRIMARY: '#63D2D9',        // Color principal
+  SECONDARY: '#63D2D9',      // Color secundario
 };
+
+export default Colors;
