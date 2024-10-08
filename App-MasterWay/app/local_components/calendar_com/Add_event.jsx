@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { auth } from '../../../configs/FirebaseConfig';  
 import { doc, getDoc, updateDoc } from 'firebase/firestore';  
 import { db } from '../../../configs/FirebaseConfig';
+import { Input } from '@mui/material';
 
 export default function Add_Event() {
   const router = useRouter();
@@ -36,8 +37,28 @@ export default function Add_Event() {
 
   return (
     <View style={styles.container}>
-        <Text style={styles.evento}>evento</Text>
-        <Text style={styles.descripcion}>descripcion</Text>
+      
+        <View style={styles.form}>
+            <Input
+            placeholder='Seleccionar evento'
+            value ={null}
+            onChangeText={value => {}}
+            />
+
+
+            <Input
+            placeholder='Descripcion'
+            value ={null}
+            onChangeText={value => {}}
+            />
+
+          </View>
+
+          <TouchableOpacity onPress={() => router.replace('../../calendar')}
+          style={styles.button}>
+          <Text style={styles.buttonText}>cancelar</Text>
+          </TouchableOpacity>
+            
     </View>
 
   );
@@ -45,8 +66,17 @@ export default function Add_Event() {
 
 const styles = StyleSheet.create({
   container:{
-    padding: 20, 
+    flex: 1, 
+    paddingHorizontal: 4
+  },
+  form: {
+    gap: 18,
     marginTop: 20,
+  },
+  button: {
+    backgroundColor: '#63D2D9',
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 20
   }
-  
   });
