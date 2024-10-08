@@ -1,46 +1,52 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { Colors } from 'react-native/Libraries/NewAppScreen'
+import { View, Text, Image } from 'react-native'; // Asegúrate de importar Image correctamente
+import React from 'react';
 
-export default function RecomendacionesListItem({Travel}){
+export default function RecomendacionesListItem({ recomendaciones }) {  // Asegúrate de recibir correctamente 'recomendaciones'
   return (
     <View style={{
-        padding:10,
-        marginRight:15,
-        backgroundColor:Colors.WHITE,
-        borderRadius:10
+        padding: 10,
+        marginRight: 15,
+        backgroundColor: '#FFFFFF',  // Define el color directamente
+        borderRadius: 10
     }}>
-        <Image sourse={{uri:Recomendaciones?.imageUrl}}
+      <Image 
+        source={{ uri: recomendaciones?.imageUrl }}  // Corrige el typo en 'source'
         style={{
-            width:100,
-            height:100,
-            objectFit:'cover',
-            borderRadius:10
+            width: 100,
+            height: 100,
+            resizeMode: 'cover',  // Usa 'resizeMode' en vez de 'objectFit'
+            borderRadius: 10
         }}
-        />
+      />
+      <Text style={{
+          fontFamily: 'outfit',
+          color: '#000000'  // Define el color directamente
+      }}>
+        {recomendaciones?.name}
+      </Text>
+      <View style={{
+          display: 'flex',
+          flexDirection: 'row',  // Corrige 'fexDirection' por 'flexDirection'
+          justifyContent: 'space-between',
+          alignItems: 'center'  // Corrige 'alingItems' por 'alignItems'
+      }}>
         <Text style={{
-            fontFamily:'outfit',
-            color:Colors.BLACK
-        }}>{recomendaciones?.name}</Text>
-        <View style={{
-            display:'flex',
-            fexDirection:'row',
-            justifyContent:'space-between',
-            alingItems:'center'
+            fontFamily: 'outfit-light',
+            color: '#000000'
         }}>
+          {recomendaciones?.breed}
+        </Text>
         <Text style={{
-            fontFamily:'outfit-light',
-            color:Colors.BLACK
-        }}>{recomendaciones?.breed}</Text>
-        <Text style={{
-            fontFamily:'outfit-light',
-            color:Colors.PRIMARY,
-            paddingHorizontal:7,
-            borderRadius:10,
-            fontSize:11,
-            backgroundColor:Colors.LIGHT_PRIMARY
-        }}>{recomendaciones?.age} YRS</Text>
-        </View>
+            fontFamily: 'outfit-light',
+            color: '#007AFF',  // Define el color del texto
+            paddingHorizontal: 7,
+            borderRadius: 10,
+            fontSize: 11,
+            backgroundColor: '#E0F7FA'  // Define el color de fondo directamente
+        }}>
+          {recomendaciones?.age} YRS
+        </Text>
+      </View>
     </View>
-  )
+  );
 }
