@@ -6,14 +6,17 @@ import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { TimeClock } from '@mui/x-date-pickers/TimeClock';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ToggleOffIcon from '@mui/icons-material/ToggleOff';
+import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 
 export default function Add_Event() {
   const [startSelectedDate, startsetSelectedDate] = useState(dayjs(new Date()));
   const [finalSelectedDate, finalsetSelectedDate] = useState(dayjs(new Date()));
   const [startSelectedTime, startsetSelectedTime] = useState(dayjs(new Date()));
   const [finalSelectedTime, finalsetSelectedTime] = useState(dayjs(new Date()));
+  const [isToggled, setIsToggled] = useState(false);
+
   //const [value, setValue] = React.useState(dayjs('2022-04-17'));
   const handlestartDateChange = (newDate) => {
     startsetSelectedDate(newDate);
@@ -29,6 +32,14 @@ export default function Add_Event() {
 
   const handlefinalTimeChange = (newTime) => {
     finalsetSelectedTime(newTime);
+  };
+
+  const toggleSwitch = () => {
+    setIsToggled(!isToggled);
+    if (isToggled) {
+      startsetSelectedTime(dayjs().hour(12).minute(0)); // cambiar a 12:00am
+      finalsetSelectedTime(dayjs().hour(23).minute(59)); // cambiar a 11:59pm
+    }
   };
   //const [time, setTime] = useState(new ());
   //const router = useRouter();
@@ -62,19 +73,35 @@ export default function Add_Event() {
 
     <><><View style={styles.container}>
 
+          <View style={styles.form}>
             <Input
             placeholder='Seleccionar evento'
             value ={null}
             onChangeText={value => {}}
             />
+          </View>
 
-
+          <View style={styles.form}>
             <Input
             placeholder='Descripcion'
             value ={null}
             onChangeText={value => {}}
             />
-             
+          </View>
+
+          <View style={styles.form}>
+             <View style={styles.boxAllDay}>
+                <AccessTimeIcon size={50} style={{ marginRight: 10}}/>
+                <Text style={styles.allDayText}>Todo el día</Text>
+                
+                <TouchableOpacity onPress={toggleSwitch}>
+                {isToggled ? (
+                  <ToggleOnIcon size={50} color="success" style={{ marginLeft: 50}}/>
+                ) : (
+                  <ToggleOffIcon size={50}  color="disabled" style={{ marginLeft: 50}}/>
+                )}</TouchableOpacity>
+              </View>
+          </View>
            
     </View><>
 
@@ -89,6 +116,7 @@ export default function Add_Event() {
             <TimePicker
             value={startSelectedTime}
             onChange={handlestartTimeChange}
+            disabled={isToggled}
             />
           </View>
           
@@ -101,55 +129,88 @@ export default function Add_Event() {
             <TimePicker
             value={finalSelectedTime}
             onChange={handlefinalTimeChange}
+            disabled={isToggled}
             />
           </View>
       </View>
     </LocalizationProvider></></>
 
         
+    <View style={styles.row}>          
+    <TouchableOpacity onPress={() => router.replace('../../calendar')}
+      style={styles.button}>
+      <Text style={styles.buttonText}>Cancelar</Text>
+    </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => router.replace('../../calendar')}
-          style={styles.button}>
-          <Text style={styles.buttonText}>cancelar</Text>
-          </TouchableOpacity></>
-          
+    <TouchableOpacity onPress={() => router.replace('../../calendar')}
+    style={styles.button}>
+    <Text style={styles.buttonText}>Guardar</Text>
+    </TouchableOpacity>
+    </View></>        
 
   );
 }
 
 const styles = StyleSheet.create({
   container:{
-    flex: 1, 
-    paddingHorizontal: 4
+    flex: 1,
+    marginTop: 50, 
+    paddingHorizontal: 4,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   form: {
-    gap: 18,
-    marginTop: 20,
+    flex: 1,
+    marginTop: 10,
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: '#63D2D9', // Color azul cian
+    borderRadius: 5, // Agrega bordes redondeados para un aspecto más suave
+    paddingHorizontal: 40,
+    paddingVertical: 20,
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
   },
   button: {
     backgroundColor: '#63D2D9',
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 20
+    padding: 15,
+    marginTop: 40,
+    marginBottom: 50,
+    marginLeft: 50,
+    marginRight: 50,
   },
-
+  buttonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
   container_date: {
     flex: 1,
-    padding: 50,
-    marginTop: 20,
+    marginTop: 120,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#63D2D9',
+    padding: 10,
+    paddingVertical: 10,
   },
   row: {
 
     flexDirection: 'row',
-    justifyConten: 'space-between',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#63D2D9',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
   },
   label: {
     marginRight: 10
+  },
+  boxAllDay: {
+    display: 'flex',
+    flexDirection: 'row', // Establecemos la dirección de los elementos como fila
+    alignItems: 'center', // Alineamos los elementos verticalmente al centro
+    justifyContent: 'space-between',
+  },
+  allDayText: {
+    fontSize: 20,
+    color: '#6C6C6C',
+    fontWeight: 'bold',
   },
 });
