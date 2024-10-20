@@ -1,6 +1,6 @@
 import { View, Text, Image } from 'react-native';
 import React from 'react';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { Colors } from './../../constants/Colors';
 
 export default function TravelListItem({recomendacion}) {  
   return (
@@ -10,9 +10,9 @@ export default function TravelListItem({recomendacion}) {
       backgroundColor:Colors.WHITE,
       borderRadius:10
     }}>
-      <Image source={{uri:pet?.imageUrl}}
+      <Image source={{uri:recomendacion?.imageUrl}} // Correcto
       style={{
-        widht:150,
+        width:150,
         height:150,
         objectFit:'cover',
         borderRadius:10

@@ -1,10 +1,10 @@
 import { View, Text, FlatList } from "react-native";
 import React, { useEffect, useState } from 'react';
 import Category from './Category';
-import RecomendacionesListItem from './TravelListItem';
+import TravelListItem from './TravelListItem';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from './../../configs/FirebaseConfig';
-import TravelListItem from "./TravelListItem";
+
 
 export default function TravelListByCategory() {
 
