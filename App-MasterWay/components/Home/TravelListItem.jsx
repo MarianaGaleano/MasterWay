@@ -1,10 +1,16 @@
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { Colors } from './../../constants/Colors';
 
-export default function TravelListItem({recomendacion}) {  
+export default function TravelListItem({recomendacion}) { 
+    const router=useRouter();
   return (
-    <View style={{
+    <TouchableOpacity 
+    onPress={()=>router.push({
+        pathname:'/recomendaciones-details',
+        params:recomendacion
+    })}
+    style={{
       padding:10,
       marginRight:15,
       backgroundColor:Colors.WHITE,
@@ -45,6 +51,6 @@ export default function TravelListItem({recomendacion}) {
         }}>{recomendacion.Calificación}</Text>
       </View>
       
-    </View>
+    </TouchableOpacity>
   )
 }

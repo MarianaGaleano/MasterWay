@@ -12,7 +12,6 @@ export default function MyTrip() {
       <br></br>
       {/* Search */}
       <Search />
-      
       {/* TravelList + Category */}
       <TravelListByCategory />
     </View>

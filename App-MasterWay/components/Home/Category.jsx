@@ -3,10 +3,18 @@ import React, { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from './../../configs/FirebaseConfig';
 import Colors from './../../constants/Colors';
-export default function Category({category}) {
 
+// Mapeo de categorías con los logos correspondientes
+const categoryIcons = {
+    Restaurantes: require('./../../assets/images/restaurant-building.png'),
+    Hoteles: require('./../../assets/images/hotel.png'),
+    'Sitios turísticos': require('./../../assets/images/tour-guide.png'),
+    Tours: require('./../../assets/images/destination.png')
+};
+
+export default function Category({ category }) {
     const [categories, setCategoryList] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState('Travel');
+    const [selectedCategory, setSelectedCategory] = useState('Hoteles'); // Categoría por defecto
 
     useEffect(() => {
         GetCategories();
@@ -25,34 +33,28 @@ export default function Category({category}) {
             <FlatList
                 data={categories}
                 numColumns={4}
-                keyExtractor={(item, index) => index.toString()} // Asegurarse de que haya una clave única para cada elemento
+                keyExtractor={(item, index) => index.toString()} // Clave única para cada elemento
                 renderItem={({ item }) => (
                     <TouchableOpacity
-                        onPress={() =>{ 
-                            setSelectedCategory(item.name)
-                            category(item.name)
+                        onPress={() => {
+                            setSelectedCategory(item.name);
+                            category(item.name); // Disparar el evento con la categoría seleccionada
                         }}
-                        style={{ flex: 1, alignItems: 'center', margin: 5 }} // centrar los elementos
+                        style={{ flex: 1, alignItems: 'center', margin: 5 }} // Centrar los elementos
                     >
                         <View style={[
                             styles.container,
                             selectedCategory === item.name && styles.selectedCategoryContainer
                         ]}>
-                            {/* Corregido el error tipográfico en width */}
+                            {/* Mostrar el ícono desde el mapeo */}
                             <Image
-                                source={{ uri: item?.image }}
-                                style={{ width: 40, height: 40 }} // Corregir "widht" a "width"
-                                resizeMode="cover" // Asegura que la imagen se ajuste bien
+                                source={categoryIcons[item.name]} // Mapea el nombre de la categoría al ícono
+                                style={styles.image}
+                                resizeMode="cover"
                             />
                         </View>
 
-                        {/* Asegurarse de que el texto del nombre del item se muestre */}
-                        <Text style={{
-                            fontFamily: 'outfit-medium',
-                            fontSize: 12,
-                            textAlign: 'center',
-                            marginTop: 5 // Un pequeño margen para separar la imagen del texto
-                        }}>
+                        <Text style={styles.categoryText}>
                             {item.name}
                         </Text>
                     </TouchableOpacity>
@@ -64,28 +66,28 @@ export default function Category({category}) {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#6DD5ED', // Color de fondo del círculo (el mismo que en tu imagen)
+        backgroundColor: '#6DD5ED', // Color de fondo del círculo
         padding: 15,
         alignItems: 'center',
         justifyContent: 'center', // Centrar la imagen en el contenedor circular
-        width: 70, // Ajustar el tamaño del círculo
+        width: 70, // Tamaño del círculo
         height: 70,
-        borderRadius: 40, // Hacemos el contenedor circular (la mitad del tamaño)
+        borderRadius: 40, // Hacemos el contenedor circular
         margin: 5,
     },
     selectedCategoryContainer: {
-        backgroundColor: Colors.SECONDARY, // Cambiar el color cuando se selecciona
+        backgroundColor: Colors.SECONDARY, // Color cuando está seleccionado
     },
     image: {
-        width: 40, // Ajustar el tamaño de la imagen dentro del círculo
+        width: 40, // Tamaño de la imagen dentro del círculo
         height: 40,
-        tintColor: '#fff', // Poner la imagen en blanco
+        tintColor: null, // No modificar el color, mantener el original del logo
     },
     categoryText: {
         fontFamily: 'outfit-medium', // Fuente
         fontSize: 12, // Tamaño del texto
         textAlign: 'center',
-        color: '#808080', // Color gris, similar al de la imagen
-        marginTop: 5, // Separar un poco el texto del círculo
+        color: '#808080', // Color gris
+        marginTop: 5, // Separar el texto del ícono
     }
 });
