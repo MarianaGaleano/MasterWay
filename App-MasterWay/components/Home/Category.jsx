@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from './../../configs/FirebaseConfig';
 import Colors from './../../constants/Colors';
+export default function Category({category}) {
 
-export default function Category() {
     const [categories, setCategoryList] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('Travel');
 
@@ -28,7 +28,10 @@ export default function Category() {
                 keyExtractor={(item, index) => index.toString()} // Asegurarse de que haya una clave única para cada elemento
                 renderItem={({ item }) => (
                     <TouchableOpacity
-                        onPress={() => setSelectedCategory(item.name)}
+                        onPress={() =>{ 
+                            setSelectedCategory(item.name)
+                            category(item.name)
+                        }}
                         style={{ flex: 1, alignItems: 'center', margin: 5 }} // centrar los elementos
                     >
                         <View style={[

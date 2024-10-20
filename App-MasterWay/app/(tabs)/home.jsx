@@ -9,11 +9,11 @@ export default function MyTrip() {
     <View style={{ padding: 20, marginTop: 20 }}>
       {/* Header */}
       <Header />
-      
+      <br></br>
       {/* Search */}
       <Search />
       
-      {/* TravelList +Category */}
+      {/* TravelList + Category */}
       <TravelListByCategory />
     </View>
   );
