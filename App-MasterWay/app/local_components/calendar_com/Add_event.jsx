@@ -1,21 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
-import { Colors } from '@/constants/Colors';
 import dayjs from 'dayjs';
-//import { useRouter } from 'expo-router';
-//import { auth } from '../../../configs/FirebaseConfig';  
-//import { doc, getDoc, updateDoc } from 'firebase/firestore';  
-//import { db } from '../../../configs/FirebaseConfig';
 import { Input } from '@mui/material';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { TimeClock } from '@mui/x-date-pickers/TimeClock';
 
 export default function Add_Event() {
-  const [value, setValue] = React.useState(dayjs('2022-04-17'));
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
+  const [startSelectedDate, startsetSelectedDate] = useState(dayjs(new Date()));
+  const [finalSelectedDate, finalsetSelectedDate] = useState(dayjs(new Date()));
+  const [startSelectedTime, startsetSelectedTime] = useState(dayjs(new Date()));
+  const [finalSelectedTime, finalsetSelectedTime] = useState(dayjs(new Date()));
+  //const [value, setValue] = React.useState(dayjs('2022-04-17'));
+  const handlestartDateChange = (newDate) => {
+    startsetSelectedDate(newDate);
+  };
+
+  const handlefinalDateChange = (newDate) => {
+    finalsetSelectedDate(newDate);
+  };
+
+  const handlestartTimeChange = (newTime) => {
+    startsetSelectedTime(newTime);
+  };
+
+  const handlefinalTimeChange = (newTime) => {
+    finalsetSelectedTime(newTime);
   };
   //const [time, setTime] = useState(new ());
   //const router = useRouter();
@@ -62,23 +75,37 @@ export default function Add_Event() {
             onChangeText={value => {}}
             />
              
-            <Input
-            placeholder='Hora inicio'
-            value ={null}
-            onChangeText={value => {}}
-            />
+           
     </View><>
 
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <DemoContainer components={['DatePicker', 'DatePicker']}>
-        <DatePicker label="Uncontrolled picker" defaultValue={dayjs('2022-04-17')} />
-        <DatePicker
-          label="Controlled picker"
-          value={value}
-          onChange={(newValue) => setValue(newValue)}
-        />
-      </DemoContainer>
+        <View style={styles.container_date}>
+          <View style={styles.row}>
+          <Text style={styles.label}>Fecha inicio:</Text>
+            <DatePicker
+            value={startSelectedDate}
+            onChange={handlestartDateChange}
+            />
+            <TimePicker
+            value={startSelectedTime}
+            onChange={handlestartTimeChange}
+            />
+          </View>
+          
+          <View style={styles.row}>
+          <Text style={styles.label}>Fecha  final:</Text>
+            <DatePicker
+            value={finalSelectedDate}
+            onChange={handlefinalDateChange}
+            />
+            <TimePicker
+            value={finalSelectedTime}
+            onChange={handlefinalTimeChange}
+            />
+          </View>
+      </View>
     </LocalizationProvider></></>
+
         
 
           <TouchableOpacity onPress={() => router.replace('../../calendar')}
@@ -104,5 +131,25 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     marginTop: 20
-  }
-  });
+  },
+
+  container_date: {
+    flex: 1,
+    padding: 50,
+    marginTop: 20,
+  },
+  row: {
+
+    flexDirection: 'row',
+    justifyConten: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#63D2D9',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+  },
+  label: {
+    marginRight: 10
+  },
+});
