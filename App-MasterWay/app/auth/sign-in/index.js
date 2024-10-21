@@ -88,14 +88,15 @@ export default function SingIn() {
       const { createdSessionId, signIn, signUp, setActive } = await startOAuthFlow({
         redirectUrl: Linking.createURL('/(tabs)/home', { scheme: 'myapp' }),
       });
-  
+
       if (createdSessionId) {
         await setActive({ session: createdSessionId });
         router.replace('/home');
-      } else if (signIn) {
-        // Handle sign-in response, e.g. additional steps like MFA
       } else if (signUp) {
-        // Handle sign-up response
+        const userEmail = signUp.emailAddress || '';
+        router.replace('/auth/sign-up', { email: userEmail });
+      } else {
+        setErrorMessage("No se pudo completar el inicio de sesión con Google.");
       }
     } catch (err) {
       console.error('OAuth error', err);
