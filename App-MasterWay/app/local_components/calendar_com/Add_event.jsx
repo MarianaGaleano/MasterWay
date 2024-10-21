@@ -3,7 +3,9 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'reac
 import { useRouter } from 'expo-router';
 import { db } from './../../../configs/FirebaseConfig';
 import { addDoc, doc } from 'firebase/firestore';
-import { auth } from './../../../configs/FirebaseConfig';  
+import { auth } from './../../../configs/FirebaseConfig';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';  
 import { useNavigation } from 'expo-router';
 import dayjs from 'dayjs';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
@@ -17,15 +19,6 @@ import { setDoc } from 'firebase/firestore';
 
 export default function Add_Event() {
 
-  const [newEvent, setnewEvent] = useState({
-    nameEvent: '',
-    description: '',
-    startSelectedDate: '',
-    finalSelectedDate: '',
-    startSelectedTime: '',
-    finalSelectedTime: '',
-  })
-
   const router = useRouter();
   const user = auth.currentUser;
   const navigation = useNavigation();
@@ -36,17 +29,30 @@ export default function Add_Event() {
   const [isToggled, setIsToggled] = useState(false);
   const [nameEvent] = useState('');
   const [description] = useState('');
+  //const [startDate] = useState('');
+  //const [startTime] = useState('');
+  //const [endDate] = useState('');
+  //const [endTime] = useState('');
+
+  const [newEvent, setnewEvent] = useState({
+    nameEvent,
+    description,
+    startSelectedDate,
+    finalSelectedDate,
+    startSelectedTime,
+    finalSelectedTime,
+  })
   
   const UpdateEvent = async()=>{
     //if (!newEvent.nameEvent || !newEvent.description || !newEvent.startSelectedDate || !newEvent.finalSelectedDate) {
     //  alert("por favor llena todos los campos");
     //  return;
     //}
-    
-    const formattedStartDate = dayjs(startSelectedDate).format('YYYY-MM-DD');
-    const formattedStartTime = dayjs(startSelectedTime).format('HH:mm:ss');
-    const formattedEndDate = dayjs(finalSelectedDate).format('YYYY-MM-DD');
-    const formattedEndTime = dayjs(finalSelectedTime).format('HH:mm:ss');
+    console.log('fecha seleccionada: ',startSelectedDate);
+    const formattedStartDate = dayjs(newEvent.startSelectedDate).format('YYYY-MM-DD');
+    const formattedStartTime = dayjs(newEvent.startSelectedTime).format('HH:mm:ss');
+    const formattedEndDate = dayjs(newEvent.finalSelectedDate).format('YYYY-MM-DD');
+    const formattedEndTime = dayjs(newEvent.finalSelectedTime).format('HH:mm:ss');
         
     const eventToSave = {
     ...newEvent,
@@ -61,7 +67,6 @@ export default function Add_Event() {
     await setDoc(eventRef, eventToSave);
     router.replace('../../calendar');  
     }
-    
 
   //constantes que van a cambiar el estado de los campos;
   const handleNameChange = (text) => {
@@ -72,12 +77,6 @@ export default function Add_Event() {
     }));
   };
   
-  if (newEvent) {
-    console.log(newEvent.description);
-  } else {
-    console.log('description no está definido');
-  }
-
   const handleDescriptionChange = (text) => {
     setnewEvent((prevEvent) => ({
       ...prevEvent,
@@ -196,6 +195,7 @@ export default function Add_Event() {
           <Text style={styles.label}>Fecha inicio:</Text>
             <DatePicker
             value={startSelectedDate}
+            type={Date}
             onChange={handlestartDateChange}
             />
             <TimePicker
@@ -209,6 +209,7 @@ export default function Add_Event() {
           <Text style={styles.label}>Fecha  final:</Text>
             <DatePicker
             value={finalSelectedDate}
+            type={Date}
             onChange={handlefinalDateChange}
             />
             <TimePicker
