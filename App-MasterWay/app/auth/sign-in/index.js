@@ -1,9 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Pressable, Platform } from 'react-native';
 import { useNavigation, useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from './../../../configs/FirebaseConfig'
+import * as WebBrowser from 'expo-web-browser'
+import { useOAuth } from '@clerk/clerk-expo'
+import * as Linking from 'expo-linking'
+
+export const useWarmUpBrowser = () => {
+  React.useEffect(() => {
+    // Warm up the android browser to improve UX
+    // https://docs.expo.dev/guides/authentication/#improving-user-experience
+    if (Platform.OS !== 'web') { // Verificación para evitar el error en web
+      void WebBrowser.warmUpAsync();
+      return () => {
+        void WebBrowser.coolDownAsync();
+      };
+    }
+  }, [])
+}
+
+WebBrowser.maybeCompleteAuthSession()
 
 export default function SingIn() {
   const navigation = useNavigation();
@@ -60,6 +78,30 @@ export default function SingIn() {
   });
 
   }
+
+  useWarmUpBrowser();
+
+  const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' })
+
+  const onPress = useCallback(async () => {
+    try {
+      const { createdSessionId, signIn, signUp, setActive } = await startOAuthFlow({
+        redirectUrl: Linking.createURL('/(tabs)/home', { scheme: 'myapp' }),
+      });
+  
+      if (createdSessionId) {
+        await setActive({ session: createdSessionId });
+        router.replace('/home');
+      } else if (signIn) {
+        // Handle sign-in response, e.g. additional steps like MFA
+      } else if (signUp) {
+        // Handle sign-up response
+      }
+    } catch (err) {
+      console.error('OAuth error', err);
+      setErrorMessage('Error al iniciar sesión con Google.');
+    }
+  }, []);
 
   return (
     <View style={{
@@ -164,7 +206,7 @@ export default function SingIn() {
 
 
         {/*BOTON INICIAR CON NUMERO DE TELEFONO */}
-        <View style={{
+        {/* <View style={{
           padding:15,
           backgroundColor:Colors.WHITE,
           borderRadius:15,
@@ -177,10 +219,10 @@ export default function SingIn() {
             fontSize:15,
             fontFamily:'popins-bold'
           }}>Registrarse con numero de telefono</Text>
-        </View>
+        </View> */}
 
         {/*BOTON INICIAR CON GMAIL */}
-        <View style={{
+        <TouchableOpacity onPress={onPress} style={{
           padding:15,
           backgroundColor:Colors.WHITE,
           borderRadius:15,
@@ -193,7 +235,7 @@ export default function SingIn() {
             fontSize:15,
             fontFamily:'popins-bold'
           }}>Registrarse con google</Text>
-        </View>
+        </TouchableOpacity>
 
     </View>
   )
