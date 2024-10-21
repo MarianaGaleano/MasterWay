@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import { useRouter } from 'expo-router';
+import { db } from './../../../configs/FirebaseConfig';
+import { addDoc, doc } from 'firebase/firestore';
+import { auth } from './../../../configs/FirebaseConfig';  
+import { useNavigation } from 'expo-router';
 import dayjs from 'dayjs';
-import { Input } from '@mui/material';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -9,38 +13,114 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ToggleOffIcon from '@mui/icons-material/ToggleOff';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
+import { setDoc } from 'firebase/firestore';
 
 export default function Add_Event() {
+
+  const [newEvent, setnewEvent] = useState({
+    nameEvent: '',
+    description: '',
+    startSelectedDate: '',
+    finalSelectedDate: '',
+    startSelectedTime: '',
+    finalSelectedTime: '',
+  })
+
+  const router = useRouter();
+  const user = auth.currentUser;
+  const navigation = useNavigation();
   const [startSelectedDate, startsetSelectedDate] = useState(dayjs(new Date()));
   const [finalSelectedDate, finalsetSelectedDate] = useState(dayjs(new Date()));
   const [startSelectedTime, startsetSelectedTime] = useState(dayjs(new Date()));
   const [finalSelectedTime, finalsetSelectedTime] = useState(dayjs(new Date()));
   const [isToggled, setIsToggled] = useState(false);
+  const [nameEvent] = useState('');
+  const [description] = useState('');
+  
+  const UpdateEvent = async()=>{
+    //if (!newEvent.nameEvent || !newEvent.description || !newEvent.startSelectedDate || !newEvent.finalSelectedDate) {
+    //  alert("por favor llena todos los campos");
+    //  return;
+    //}
+    
+    const formattedStartDate = dayjs(startSelectedDate).format('YYYY-MM-DD');
+    const formattedStartTime = dayjs(startSelectedTime).format('HH:mm:ss');
+    const formattedEndDate = dayjs(finalSelectedDate).format('YYYY-MM-DD');
+    const formattedEndTime = dayjs(finalSelectedTime).format('HH:mm:ss');
+        
+    const eventToSave = {
+    ...newEvent,
+    startSelectedDate: formattedStartDate,
+    startSelectedTime: formattedStartTime,
+    finalSelectedDate: formattedEndDate,
+    finalSelectedTime: formattedEndTime,
+    };
 
-  //const [value, setValue] = React.useState(dayjs('2022-04-17'));
+    const docId=(Date.now()).toString();
+    const eventRef = doc(db, "events", docId);
+    await setDoc(eventRef, eventToSave);
+    router.replace('../../calendar');  
+    }
+    
+
+  //constantes que van a cambiar el estado de los campos;
+  const handleNameChange = (text) => {
+    setnewEvent((prevEvent) => ({
+      ...prevEvent, //prevEventcopia todas las propiedades del estado anterior
+                    //al nuevo objeto
+      nameEvent: text,
+    }));
+  };
+  
+  if (newEvent) {
+    console.log(newEvent.description);
+  } else {
+    console.log('description no está definido');
+  }
+
+  const handleDescriptionChange = (text) => {
+    setnewEvent((prevEvent) => ({
+      ...prevEvent,
+      description: text,
+    }));
+  };
+
   const handlestartDateChange = (newDate) => {
-    startsetSelectedDate(newDate);
+    setnewEvent((prevEvent) => ({
+      ...prevEvent,
+      startSelectedDate: newDate,
+    }));
   };
 
   const handlefinalDateChange = (newDate) => {
-    finalsetSelectedDate(newDate);
+    setnewEvent((prevEvent) => ({
+      ...prevEvent,
+      finalSelectedDate: newDate,
+    }));
   };
-
+  
   const handlestartTimeChange = (newTime) => {
-    startsetSelectedTime(newTime);
+    setnewEvent((prevEvent) => ({
+      ...prevEvent,
+      startSelectedTime: newTime,
+    }));
   };
-
+  
   const handlefinalTimeChange = (newTime) => {
-    finalsetSelectedTime(newTime);
+    setnewEvent((prevEvent) => ({
+      ...prevEvent,
+      finalSelectedTime: newTime,
+    }));
   };
 
   const toggleSwitch = () => {
     setIsToggled(!isToggled);
     if (isToggled) {
-      startsetSelectedTime(dayjs().hour(12).minute(0)); // cambiar a 12:00am
+      startsetSelectedTime(dayjs().hour(0).minute(0)); // cambiar a 12:00am
       finalsetSelectedTime(dayjs().hour(23).minute(59)); // cambiar a 11:59pm
     }
   };
+
   //const [time, setTime] = useState(new ());
   //const router = useRouter();
   //const [userData, setUserData] = useState(null);
@@ -74,19 +154,24 @@ export default function Add_Event() {
     <><><View style={styles.container}>
 
           <View style={styles.form}>
-            <Input
-            placeholder='Seleccionar evento'
-            value ={null}
-            onChangeText={value => {}}
-            />
+            <View style={styles.infoText}>
+              <TextInput
+              placeholder='Seleccionar evento'
+              value ={newEvent.nameEvent}
+              onChangeText={handleNameChange}
+              />
+            </View>
           </View>
 
           <View style={styles.form}>
-            <Input
-            placeholder='Descripcion'
-            value ={null}
-            onChangeText={value => {}}
-            />
+            <View style={styles.infoText}>
+              <TextInput
+              placeholder='Descripcion'
+              value ={newEvent.description}
+              onChangeText={handleDescriptionChange}
+                
+              />
+            </View>
           </View>
 
           <View style={styles.form}>
@@ -142,7 +227,7 @@ export default function Add_Event() {
       <Text style={styles.buttonText}>Cancelar</Text>
     </TouchableOpacity>
 
-    <TouchableOpacity onPress={() => router.replace('../../calendar')}
+    <TouchableOpacity onPress={() => UpdateEvent()}
     style={styles.button}>
     <Text style={styles.buttonText}>Guardar</Text>
     </TouchableOpacity>
@@ -165,12 +250,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 30,
     borderWidth: 1,
-    borderColor: '#63D2D9', // Color azul cian
-    borderRadius: 5, // Agrega bordes redondeados para un aspecto más suave
+    borderColor: '#63D2D9',
+    borderRadius: 5,
     paddingHorizontal: 40,
     paddingVertical: 20,
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
+  },
+  infoText: {
+    fontSize: 16,
+    color: '#757575',
   },
   button: {
     backgroundColor: '#63D2D9',
