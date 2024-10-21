@@ -1,6 +1,6 @@
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { useNavigation, useRouter, useSearchParams } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -10,8 +10,6 @@ import { setDoc, doc, query, where, getDocs, collection } from 'firebase/firesto
 export default function SignUp() {
   const navigation = useNavigation();
   const router = useRouter();
-  const { email: emailParam } = useSearchParams(); // Obtener el correo como parámetro
-
 
   // Estados para los campos del formulario
   const [fullName, setFullName] = useState('');
@@ -28,12 +26,7 @@ export default function SignUp() {
     navigation.setOptions({
       headerShown: false,
     });
-
-    // Si el parámetro de email está presente, establecer el estado de email
-    if (emailParam) {
-      setEmail(emailParam);
-    }
-  }, [emailParam]);
+  }, []);
 
   // Función para verificar si el nombre de usuario ya existe en Firestore
   const checkUsername = async (username) => {
@@ -122,7 +115,7 @@ export default function SignUp() {
           alert('La contraseña es muy débil. Debe tener al menos 6 caracteres.');
           break;
         default:
-          alert(`Error al crear la cuenta: ${error.message}`);
+          alert('Error al crear la cuenta: ${error.message}');
       }
     } finally {
       setLoading(false); // Desactivar estado de carga
@@ -187,8 +180,6 @@ export default function SignUp() {
             style={styles.input}
             placeholder="Ingresa tu correo electrónico"
             onChangeText={setEmail}
-            value={email} // Configurar el valor del correo automáticamente
-            editable={!emailParam} // Deshabilitar la edición si viene de OAuth
           />
         </View>
 
