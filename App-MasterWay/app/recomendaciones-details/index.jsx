@@ -1,36 +1,29 @@
-import { View, ScrollView } from 'react-native';
-import React, { useEffect } from 'react';
-import { useLocalSearchParams } from 'react-router'; // Asumo que estás usando react-router para las rutas
-import { useNavigation } from '@react-navigation/native'; // React Navigation
-import RecomendacionesInfo from '../../components/RecomendacionesDetails/RecomendacionesInfo';
-import PerfilDeUsuario from '../../components/RecomendacionesDetails/PerfilDeUsuario';
-import BotonGuardar from '../../components/RecomendacionesDetails/BotonGuardar';
-import Comentarios from '../../components/RecomendacionesDetails/Comentarios';
+import { View, Text } from 'react-native'
+import React, { useEffect } from 'react'
+import { useLocalSearchParams, useNavigation } from 'expo-router'
+import RecomendacionInfo from '../../components/RecomendacionesDetails/RecomendacionInfo';
 
 export default function RecomendacionesDetails() {
-  const recomendacion = useLocalSearchParams(); // Obtiene los parámetros de la recomendación
-  const navigation = useNavigation();
+    const recomendacion=useLocalSearchParams();
+    const navigation=useNavigation();
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerTransparent: true,
-      headerTitle: '',
-    });
-  }, []);
-
+    useEffect(()=>{
+        navigation.setOptions({
+          headerTransparent:true,
+          headerTitle:''
+        })
+    },[])
   return (
-    <ScrollView>
-      {/* Recomendacion info */}
-      <RecomendacionesInfo recomendacion={recomendacion} />
+    <View>
+      {/*RecomendacionInfo*/}
+        <RecomendacionInfo recomendacion={recomendacion}/>
 
-      {/* Perfil de usuario */}
-      <PerfilDeUsuario usuario={recomendacion.usuario} />
+      {/*RecomendacionInfo*/}
 
-      {/* Botón de guardar recomendación */}
-      <BotonGuardar />
+      {/*RecomendacionInfo*/}
 
-      {/* Comentarios */}
-      <Comentarios comentarios={recomendacion.comentarios} />
-    </ScrollView>
-  );
+      {/*RecomendacionInfo*/}
+
+    </View>
+  )
 }

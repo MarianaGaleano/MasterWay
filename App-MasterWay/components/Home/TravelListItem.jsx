@@ -2,13 +2,16 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native'; // Importa useNavigation
 import { Colors } from './../../constants/Colors';
+import { useRouter } from 'expo-router';
 
 export default function TravelListItem({ recomendacion }) { 
-    const navigation = useNavigation(); // Cambia router por navigation
-
+    const router=useRouter();
     return (
         <TouchableOpacity 
-            onPress={() => navigation.navigate('RecomendacionesDetails', { recomendacion })} // Cambia la ruta según sea necesario
+            onPress={() => router.push({
+                pathname: '/recomendaciones-details',
+                params:recomendacion
+            })}
             style={styles.container} // Usa estilos de StyleSheet
         >
             <Image 
