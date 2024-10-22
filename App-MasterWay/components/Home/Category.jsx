@@ -21,11 +21,13 @@ export default function Category({ category }) {
     }, []);
 
     const GetCategories = async () => {
-        setCategoryList([]);
-        const snapshot = await getDocs(collection(db, 'Category'));
-        snapshot.forEach((doc) => {
-            setCategoryList(categoryList => [...categoryList, doc.data()]);
-        });
+        try {
+            const snapshot = await getDocs(collection(db, 'Category'));
+            const categoriesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); // Mapea los datos
+            setCategoryList(categoriesData);
+        } catch (error) {
+            console.error("Error al obtener categorías:", error); // Manejo de errores
+        }
     };
 
     return (
@@ -33,7 +35,7 @@ export default function Category({ category }) {
             <FlatList
                 data={categories}
                 numColumns={4}
-                keyExtractor={(item, index) => index.toString()} // Clave única para cada elemento
+                keyExtractor={(item) => item.id} // Usar id del documento como clave única
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         onPress={() => {
@@ -42,10 +44,7 @@ export default function Category({ category }) {
                         }}
                         style={{ flex: 1, alignItems: 'center', margin: 5 }} // Centrar los elementos
                     >
-                        <View style={[
-                            styles.container,
-                            selectedCategory === item.name && styles.selectedCategoryContainer
-                        ]}>
+                        <View style={[styles.container, selectedCategory === item.name && styles.selectedCategoryContainer]}>
                             {/* Mostrar el ícono desde el mapeo */}
                             <Image
                                 source={categoryIcons[item.name]} // Mapea el nombre de la categoría al ícono
@@ -53,7 +52,6 @@ export default function Category({ category }) {
                                 resizeMode="cover"
                             />
                         </View>
-
                         <Text style={styles.categoryText}>
                             {item.name}
                         </Text>
