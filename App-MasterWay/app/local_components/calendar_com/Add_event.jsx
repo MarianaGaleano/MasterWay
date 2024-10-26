@@ -62,8 +62,8 @@ export default function Add_Event() {
     finalSelectedTime: formattedEndTime,
     };
 
-    const docId=(Date.now()).toString();
-    const eventRef = doc(db, "events", docId);
+    //const docId=(Date.now()).toString();
+    const eventRef = doc(db, "events", auth.currentUser.uid);
     await setDoc(eventRef, eventToSave);
     router.replace('../../calendar');  
     }
