@@ -45,8 +45,8 @@ function rangeDates(startDate,endDate) {
   const end_date = dayjs(endDate).toDate();
   let currentDate = start_date
   let daysToHighlight = []
-  while (currentDate.isBefore(end_date) || currentDate.isSame(end_date, 'day')) {
-    daysToHighlight.push(currentDate);
+  while (currentDate <= end_date) {
+    daysToHighlight.push(new Date(currentDate));
     currentDate.setDate(currentDate.getDate()+1); // Incrementa un día
     }
     console.log("currentDate: ", currentDate)
@@ -86,16 +86,16 @@ export default function Calendar() {
         const finalSelectedDate = dayjs(fechaFin).format('YYYY-MM-DD');
         //const inicio = dayjs(startSelectedDate).format('DD');
         
-        //const range = rangeDates(fechaInicio, fechaFin);
+        const range = rangeDates(fechaInicio, fechaFin);
 
         //const dayRange = fechaInicio;
         //dayRange.setDate(dayRange.getDate()+1);
 
-        //setHighlightedDays(range);
-        setHighlightedDays([
-          new Date(dayjs(startSelectedDate)),
-          new Date(dayjs(finalSelectedDate))
-        ]);
+        setHighlightedDays(range);
+        //setHighlightedDays([
+        //  new Date(dayjs(startSelectedDate)),
+        //  new Date(dayjs(finalSelectedDate))
+        //]);
 
         //console.log("Datos de eventos obtenidos de Firebase:", eventData); // Console log para verificar los datos
 
