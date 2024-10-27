@@ -1,6 +1,7 @@
 import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native'
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 //import Badge from '@mui/material/Badge';
 import { PickersDay } from '@mui/x-date-pickers/PickersDay';
 import { auth } from './../configs/FirebaseConfig';
@@ -13,7 +14,7 @@ import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton';
 import './local_components/calendar_com/calendar_comp';
 
-
+dayjs.extend(isBetween);
   const CustomDay = ({ selected, ...other }) => {
     return (
       <PickersDay
@@ -29,7 +30,7 @@ function ServerDay(props) {
 
   const isSelected =
   highlightedDays.some(
-    (date) => dayjs(date).format('YYYY-MM-DD') === dayjs(day).format('YYYY-MM-DD')
+    (date) => dayjs(date).isSame(day, 'day')
   );
 
   return (
@@ -38,6 +39,19 @@ function ServerDay(props) {
       selected={isSelected} />
   );
 };
+
+function rangeDates(startDate,endDate) {
+  const start_date = dayjs(startDate).toDate();
+  const end_date = dayjs(endDate).toDate();
+  let currentDate = start_date
+  let daysToHighlight = []
+  while (currentDate.isBefore(end_date) || currentDate.isSame(end_date, 'day')) {
+    daysToHighlight.push(currentDate);
+    currentDate.setDate(currentDate.getDate()+1); // Incrementa un día
+    }
+    console.log("currentDate: ", currentDate)
+    return daysToHighlight;
+}
 
 export default function Calendar() {
   const navigation=useNavigation();
@@ -70,27 +84,24 @@ export default function Calendar() {
 
         const startSelectedDate = dayjs(fechaInicio).format('YYYY-MM-DD');
         const finalSelectedDate = dayjs(fechaFin).format('YYYY-MM-DD');
+        //const inicio = dayjs(startSelectedDate).format('DD');
+        
+        //const range = rangeDates(fechaInicio, fechaFin);
 
-        //const daysToHighlight = ((acc , event) => {
-        //  acc.push(dayjs(event.fechaInicio).format('YYYY-MM-DD'));
-        //  acc.push(dayjs(event.fechaFin).format('YYYY-MM-DD'));
-        //  return acc;
-        //}, []);
+        //const dayRange = fechaInicio;
+        //dayRange.setDate(dayRange.getDate()+1);
+
+        //setHighlightedDays(range);
         setHighlightedDays([
           new Date(dayjs(startSelectedDate)),
           new Date(dayjs(finalSelectedDate))
         ]);
 
-        console.log("Datos de eventos obtenidos de Firebase:", eventData); // Console log para verificar los datos
-        //setEvents(eventData); // Actualiza el estado del componente con los eventos
-        // Marcar las fechas en el calendario
-        //setMarkedDates({
-        //  [startSelectedDate]: { selected: true, selectedColor: 'red' },
-        //  [finalSelectedDate]: { selected: true, selectedColor: 'blue' }
-        //});
+        //console.log("Datos de eventos obtenidos de Firebase:", eventData); // Console log para verificar los datos
+
         console.log("Fechas marcadas en el calendario:", highlightedDays);
-        console.log("Fecha inicio: ", startSelectedDate);
-        console.log("Fecha fin: ", finalSelectedDate);
+        //console.log("Fecha inicio: ", startSelectedDate);
+        //console.log("Fecha fin: ", finalSelectedDate);
       } else {
         console.log("No hay documentos de eventos para este usuario.");
     }
