@@ -15,11 +15,45 @@ import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton';
 import './local_components/calendar_com/calendar_comp';
 
 dayjs.extend(isBetween);
-  const CustomDay = ({ selected, ...other }) => {
+  function CustomDay ({ selected, start, end, ...other }) {
+    let style = { backgroundColor: selected ? '#63D2D9' : '' };
+
+    if (start) {
+      style = {
+        ...style,
+        //borderTopLeftRadius: '50%',
+        //borderBottomLeftRadius: '50%',
+        borderRadius: '50% 0 0 50%',
+        marginLeft: 0,
+        padding: 4,
+      };
+    }
+  
+    if (end) {
+      style = {
+        ...style,
+        //borderTopRightRadius: '50%',
+        //borderBottomRightRadius: '50%',
+        borderRadius: '0 50% 50% 0',
+        marginRight: 0,
+        padding: 4,
+      };
+    }
+  
+    if (!start && !end && selected) {
+      style = {
+        ...style,
+        borderRadius: 0,
+        marginLeft: -4,
+        marginRight: -4,
+        padding: 4,
+      };  
+    }
+
     return (
       <PickersDay
         {...other}
-        style={{ backgroundColor: selected ? '#63D2D9' : '' }}
+        style={style}
       />
     );
   };
@@ -33,10 +67,16 @@ function ServerDay(props) {
     (date) => dayjs(date).isSame(day, 'day')
   );
 
+  const isStart = dayjs(day).isSame(dayjs(highlightedDays[0]), 'day');
+  const isEnd = dayjs(day).isSame(dayjs(highlightedDays[highlightedDays.length - 1]));
+
   return (
       <CustomDay {...other} outsideCurrentMonth={outsideCurrentMonth} 
       day={day} 
-      selected={isSelected} />
+      selected={isSelected}
+      start={isStart}
+      end={isEnd}
+      />
   );
 };
 
