@@ -1,29 +1,48 @@
-import { View, Text } from 'react-native'
-import React, { useEffect } from 'react'
-import { useLocalSearchParams, useNavigation } from 'expo-router'
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons'; // Importamos Ionicons
 import RecomendacionInfo from '../../components/RecomendacionesDetails/RecomendacionInfo';
+import Comentarios from '../../components/RecomendacionesDetails/Comentarios';
 
 export default function RecomendacionesDetails() {
-    const recomendacion=useLocalSearchParams();
-    const navigation=useNavigation();
+    const recomendacion = useLocalSearchParams();
+    const navigation = useNavigation();
 
-    useEffect(()=>{
+    useEffect(() => {
         navigation.setOptions({
-          headerTransparent:true,
-          headerTitle:''
-        })
-    },[])
-  return (
-    <View>
-      {/*RecomendacionInfo*/}
-        <RecomendacionInfo recomendacion={recomendacion}/>
+            headerTransparent: true,
+            headerTitle: ''
+        });
+    }, []);
 
-      {/*RecomendacionInfo*/}
+    // Función para regresar a la pantalla anterior
+    const handleBackPress = () => {
+        navigation.navigate('home'); // Reemplaza 'Home' con el nombre de la pantalla a la que quieres regresar
+    };
 
-      {/*RecomendacionInfo*/}
+    return (
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            {/* Flecha de retroceso */}
+            <TouchableOpacity
+                onPress={handleBackPress}
+                style={{
+                    position: 'absolute',
+                    top: 40, // Ajusta la posición en Y según tus necesidades
+                    left: 20, // Ajusta la posición en X según tus necesidades
+                    zIndex: 10
+                }}
+            >
+                <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
 
-      {/*RecomendacionInfo*/}
+            <View>
+                {/* RecomendacionInfo */}
+                <RecomendacionInfo recomendacion={recomendacion} />
 
-    </View>
-  )
+                {/* comentarios*/}
+                <Comentarios />
+            </View>
+        </ScrollView>
+    );
 }

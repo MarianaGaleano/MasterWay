@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { Colors } from './../../constants/Colors';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import MarkFav from './../../components/MarkFav';
 
 // Componente para mostrar las estrellas doradas
 const Estrellas = ({ calificacion }) => {
@@ -38,7 +38,7 @@ export default function RecomendacionInfo({ recomendacion }) {
         <Text style={styles.titulo}>
           {recomendacion?.NombreDelLugar}
         </Text>
-        <Ionicons name="heart-outline" size={30} color="gray" />
+          <MarkFav recomendacion={recomendacion}/>
       </View>
       <View style={{ padding: 20 }}>
         <View>
