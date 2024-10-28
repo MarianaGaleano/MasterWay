@@ -6,7 +6,7 @@ import isBetween from 'dayjs/plugin/isBetween';
 import { PickersDay } from '@mui/x-date-pickers/PickersDay';
 import { auth } from './../configs/FirebaseConfig';
 import { db } from './../configs/FirebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs} from 'firebase/firestore';
 import { Link, useRouter, useNavigation} from 'expo-router';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -61,14 +61,18 @@ dayjs.extend(isBetween);
 //se muestran las fechas de los eventos
 function ServerDay(props) {
   const { highlightedDays = [], day, outsideCurrentMonth, ...other } = props;
-
-  const isSelected =
-  highlightedDays.some(
-    (date) => dayjs(date).isSame(day, 'day')
+  
+  const isSelected = highlightedDays.some(event =>
+    event.some(date => dayjs(date).isSame(day, 'day'))
   );
-
-  const isStart = dayjs(day).isSame(dayjs(highlightedDays[0]), 'day');
-  const isEnd = dayjs(day).isSame(dayjs(highlightedDays[highlightedDays.length - 1]));
+  const isStart = highlightedDays.some(event =>
+    dayjs(day).isSame(event[0], 'day')
+  );
+  const isEnd = highlightedDays.some(event =>
+    dayjs(day).isSame(event[event.length - 1], 'day')
+  );
+  console.log('fecha inicio', isStart);
+  console.log('fecha fin', isEnd);
 
   return (
       <CustomDay {...other} outsideCurrentMonth={outsideCurrentMonth} 
@@ -112,40 +116,33 @@ export default function Calendar() {
 
   //const [markedDates, setMarkedDates] = useState({});
 
-  const fetchEvents = async () => {
-    if (auth.currentUser) {
-      const eventDocRef = doc(db, 'events', auth.currentUser.uid); 
-      const eventDoc = await getDoc(eventDocRef);
+  async function fetchEvents() {
+      const eventsDocRef = collection(db, 'events'); 
+      const eventsSnapshot = await getDocs(eventsDocRef);
+      if (!eventsSnapshot.empty) {
+        const eventsData = eventsSnapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id,
+        }));
+        setEvents(eventsData)
 
-      if (eventDoc.exists()) {
-        const eventData = eventDoc.data();
-        const fechaInicio = dayjs(eventData.startSelectedDate).toDate();
-        const fechaFin = dayjs(eventData.finalSelectedDate).toDate();
+        const allHighlightedays = eventsData.map(eventData => {
+          const fechaInicio = dayjs(eventData.startSelectedDate).toDate();
+          const fechaFin = dayjs(eventData.finalSelectedDate).toDate();
 
-        const startSelectedDate = dayjs(fechaInicio).format('YYYY-MM-DD');
-        const finalSelectedDate = dayjs(fechaFin).format('YYYY-MM-DD');
-        //const inicio = dayjs(startSelectedDate).format('DD');
-        
-        const range = rangeDates(fechaInicio, fechaFin);
+          return rangeDates(fechaInicio, fechaFin);
+        });
 
-        //const dayRange = fechaInicio;
-        //dayRange.setDate(dayRange.getDate()+1);
-
-        setHighlightedDays(range);
-        //setHighlightedDays([
-        //  new Date(dayjs(startSelectedDate)),
-        //  new Date(dayjs(finalSelectedDate))
-        //]);
+        setHighlightedDays(allHighlightedays);
 
         //console.log("Datos de eventos obtenidos de Firebase:", eventData); // Console log para verificar los datos
 
-        console.log("Fechas marcadas en el calendario:", highlightedDays);
+        //console.log("Fechas marcadas en el calendario:", highlightedDays);
         //console.log("Fecha inicio: ", startSelectedDate);
         //console.log("Fecha fin: ", finalSelectedDate);
       } else {
         console.log("No hay documentos de eventos para este usuario.");
     }
-  }
   };
 
   React.useEffect(() => {
