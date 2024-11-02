@@ -68,26 +68,24 @@ export default function Profile() {
   };
 
   const uploadImage = async (uri) => {
-    if (auth.currentUser) {
-      const storage = getStorage();
-      const storageRef = ref(storage, `profilePictures/${auth.currentUser.uid}.jpg`);
-
-      // Convierte la imagen a un blob y cárgala en Firebase Storage
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      await uploadBytes(storageRef, blob);
-
-      // Obtén la URL de descarga de la imagen
-      const downloadURL = await getDownloadURL(storageRef);
-
-      // Actualiza la URL de la imagen en el documento del usuario
-      const userDocRef = doc(db, 'users', auth.currentUser.uid);
-      await updateDoc(userDocRef, { profilePictureUrl: downloadURL });
-
-      // Actualiza el estado local para mostrar la nueva imagen
-      setUserData((prev) => ({ ...prev, profilePictureUrl: downloadURL }));
+    try {
+      if (auth.currentUser) {
+        const storage = getStorage();
+        const storageRef = ref(storage, `profilePictures/${auth.currentUser.uid}.jpg`);
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        await uploadBytes(storageRef, blob);
+        const downloadURL = await getDownloadURL(storageRef);
+        const userDocRef = doc(db, 'users', auth.currentUser.uid);
+        await updateDoc(userDocRef, { profilePictureUrl: downloadURL });
+        setUserData((prev) => ({ ...prev, profilePictureUrl: downloadURL }));
+      }
+    } catch (error) {
+      console.error("Error al subir la imagen:", error);
+      alert("Hubo un error al subir la imagen. Intenta nuevamente.");
     }
   };
+  
 
   return (
     <View style={styles.container}>
