@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import * as ImagePicker from 'expo-image-picker'; // Importar ImagePicker
 import { Colors } from '@/constants/Colors';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'expo-router';
 import { auth } from './../../configs/FirebaseConfig';  
 import { doc, getDoc, updateDoc } from 'firebase/firestore';  
 import { db } from './../../configs/FirebaseConfig';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // Importar Firebase Storage
 
 export default function Profile() {
   const router = useRouter();
@@ -45,18 +47,61 @@ export default function Profile() {
       });
   };
 
+  const handleImagePick = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      alert('Se necesita permiso para acceder a tus fotos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      uploadImage(result.assets[0].uri);
+    }
+  };
+
+  const uploadImage = async (uri) => {
+    if (auth.currentUser) {
+      const storage = getStorage();
+      const storageRef = ref(storage, `profilePictures/${auth.currentUser.uid}.jpg`);
+
+      // Convierte la imagen a un blob y cárgala en Firebase Storage
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      await uploadBytes(storageRef, blob);
+
+      // Obtén la URL de descarga de la imagen
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // Actualiza la URL de la imagen en el documento del usuario
+      const userDocRef = doc(db, 'users', auth.currentUser.uid);
+      await updateDoc(userDocRef, { profilePictureUrl: downloadURL });
+
+      // Actualiza el estado local para mostrar la nueva imagen
+      setUserData((prev) => ({ ...prev, profilePictureUrl: downloadURL }));
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Perfil de Usuario</Text>
 
       {/* Imagen de perfil */}
       {userData && (
-        <View style={styles.profileSection}>
+        <TouchableOpacity onPress={handleImagePick} style={styles.profileSection}>
           <Image
             source={userData.profilePictureUrl ? { uri: userData.profilePictureUrl } : require('./../../assets/images/logo.png')}
             style={styles.avatar}
           />
-        </View>
+          <Text style={styles.editButton}>Cambiar foto de perfil</Text>
+        </TouchableOpacity>
       )}
 
       {/* Información del usuario */}
@@ -204,16 +249,21 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 10,
+  },
+  editButton: {
+    color: Colors.PRINCIPAL,
+    fontSize: 16,
   },
   infoSection: {
     marginBottom: 15,
   },
   label: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'popins-bold',
+    fontSize: 16,
     marginBottom: 5,
   },
   infoRow: {
@@ -222,34 +272,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   infoText: {
-    fontSize: 16,
-    color: '#757575',
-  },
-  input: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    fontFamily: 'popins-regular',
     fontSize: 16,
     flex: 1,
-    marginRight: 10,
-  },
-  editButton: {
-    fontSize: 14,
-    color: Colors.PRINCIPAL,
   },
   gray: {
-    color: Colors.GRAY,
+    color: Colors.gray,
+  },
+  input: {
+    flex: 1,
+    borderColor: Colors.gray,
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 8,
+    marginRight: 10,
   },
   signOutButton: {
-    marginTop: 30,
-    alignItems: 'center',
+    marginTop: 20,
+    padding: 10,
     backgroundColor: Colors.PRINCIPAL,
     paddingVertical: 15,
     borderRadius: 25,
+    alignItems: 'center',
   },
   signOutButtonText: {
-    color: Colors.BLACK,
-    textAlign: 'center',
-    fontFamily: 'popins-bold',
+    color: 'white',
     fontSize: 16,
+    fontFamily: 'popins-bold',
   },
 });
