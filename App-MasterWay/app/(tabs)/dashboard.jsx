@@ -31,7 +31,11 @@ export default function Dashboard() {
       <View style={styles.card}>
         <View style={styles.profileHeader}>
           <Image 
-            source={require('./../../assets/images/logo.png')}
+            source={
+              userData?.profilePictureUrl
+                ? { uri: userData.profilePictureUrl }
+                : require('./../../assets/images/logo.png')
+            }
             style={styles.image} 
           />
           {userData && ( 
