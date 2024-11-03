@@ -1,10 +1,27 @@
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Colors } from './../../constants/Colors';
+import { auth } from './../../configs/FirebaseConfig';  
+import { doc, getDoc } from 'firebase/firestore';  
+import { db } from './../../configs/FirebaseConfig';
 
 export default function Comentarios({ comentarios }) {
   const [newComment, setNewComment] = useState('');
   const [allComments, setAllComments] = useState(comentarios);
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const getUserData = async () => {
+      if (auth.currentUser) {
+        const userDocRef = doc(db, 'users', auth.currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setUserData(userDoc.data());
+        }
+      }
+    };
+    getUserData();
+  }, []);
   
   const handleAddComment = () => {
     if (newComment.trim()) {
@@ -12,7 +29,7 @@ export default function Comentarios({ comentarios }) {
         id: allComments.length + 1,
         usuario: 'Tú', 
         comentario: newComment,
-        avatar: 'https://www.example.com/avatar.jpg' // URL de imagen de avatar de ejemplo
+        avatar: userData?.profilePictureUrl || require('./../../assets/images/logo.png'), // Usa la imagen de perfil o un avatar predeterminado
       };
       setAllComments([...allComments, newComentario]);
       setNewComment('');
@@ -27,7 +44,11 @@ export default function Comentarios({ comentarios }) {
       {/* Campo de agregar comentario */}
       <View style={styles.addCommentContainer}>
         <Image 
-          source={{ uri: './../../assets/images/logo.png' }} // URL de avatar de ejemplo
+          source={
+            userData?.profilePictureUrl
+              ? { uri: userData.profilePictureUrl }
+              : require('./../../assets/images/logo.png')
+          } 
           style={styles.avatar}
         />
         <TextInput 
