@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { db } from './../../../configs/FirebaseConfig';
-import { addDoc, doc } from 'firebase/firestore';
+import { addDoc, collection } from 'firebase/firestore';
 import { auth } from './../../../configs/FirebaseConfig';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';  
@@ -56,15 +56,15 @@ export default function Add_Event() {
         
     const eventToSave = {
     ...newEvent,
+    userId: user.uid,
     startSelectedDate: formattedStartDate,
     startSelectedTime: formattedStartTime,
     finalSelectedDate: formattedEndDate,
     finalSelectedTime: formattedEndTime,
     };
 
-    const docId=(Date.now()).toString();
-    const eventRef = doc(db, "events", docId);
-    await setDoc(eventRef, eventToSave);
+    const eventRef = collection(db, "events");
+    await addDoc(eventRef, eventToSave);
     router.replace('../../calendar');  
     }
 
