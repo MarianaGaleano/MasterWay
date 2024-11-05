@@ -6,13 +6,16 @@ import { query, where } from 'firebase/firestore';
 import { PickersDay } from '@mui/x-date-pickers/PickersDay';
 import { auth } from './../configs/FirebaseConfig';
 import { db } from './../configs/FirebaseConfig';
-import { doc, getDoc, collection, getDocs} from 'firebase/firestore';
+import { doc, deleteDoc, collection, getDocs} from 'firebase/firestore';
 import { Link, useRouter, useNavigation} from 'expo-router';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton';
 import './local_components/calendar_com/calendar_comp';
+import CreateIcon from '@mui/icons-material/Create';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
 
 export default function Calendar() {
@@ -20,10 +23,10 @@ export default function Calendar() {
   const backImage = 'https://via.placeholder.com/40';
   const profileImage = 'https://via.placeholder.com/40';
   const [value, setValue] = React.useState(new Date());
-  const [events, setEvents] = useState({});
+  const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState([]);
-  const [TimeEvent, setTimeEvent] = useState(dayjs(new Date()));
   const requestAbortController = React.useRef(null);
+  const [forceUpdate, setForceUpdate] = useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [highlightedDays, setHighlightedDays] = React.useState([]); //variables que capturan las fechas marcadas
 
@@ -53,11 +56,6 @@ export default function Calendar() {
 
         setHighlightedDays(allHighlightedays);
 
-        //console.log("Datos de eventos obtenidos de Firebase:", eventData); // Console log para verificar los datos
-
-        //console.log("Fechas marcadas en el calendario:", highlightedDays);
-        //console.log("Fecha inicio: ", startSelectedDate);
-        //console.log("Fecha fin: ", finalSelectedDate);
       } else {
         console.log("No hay documentos de eventos para este usuario.");
     }
@@ -73,6 +71,10 @@ export default function Calendar() {
 
   function CustomDay ({ selected, start, end, ...other }) {
     let style = { backgroundColor: selected ? '#63D2D9' : '' };
+
+    //if (!selected && !start && !end) {
+    //    style.backgroundColor = '#ADD8E6';
+    //}
 
     if (start) {
       style = {
@@ -128,7 +130,7 @@ export default function Calendar() {
 //serverDay se usa para personalizar la forma en que
 //se muestran las fechas de los eventos
 function ServerDay(props) {
-  const { highlightedDays = [], day, outsideCurrentMonth, ...other } = props;
+  const { highlightedDays = [], day, outsideCurrentMonth, selectedDate, ...other } = props;
   const isSelected = highlightedDays.some(event =>
     event.some(date => dayjs(date).isSame(day, 'day'))
   );
@@ -167,6 +169,7 @@ function rangeDates(startDate,endDate) {
 
 
 function handleDayClick(day) {
+  
   if (events.length > 0) {
     // Filtrar eventos para el día seleccionado
     const selectedDay = dayjs(day);
@@ -185,26 +188,38 @@ function handleDayClick(day) {
 console.log("eventos: ", events);
 console.log("selectedEvents", selectedEvent);
 
-function EventCard({ events }) {
-  return (
-    <View style={styles.eventCard}>
-      <Text style={styles.eventTitle}>{events.nameEvent}</Text>
-      <Text style={styles.eventTime}>
-        {dayjs(events.startSelectedDate).format('h:mm a')} - {dayjs(events.finalSelectedDate).format('h:mm a')}
-      </Text>
-      <View style={styles.eventActions}>
-        <TouchableOpacity style={styles.editButton}>
-          <Text>✏️</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteButton}>
-          <Text>🗑️</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+const handleDateChange = (newValue) => {
+    setValue(newValue)
+};
+
+//funcion para borrar evento
+async function deleteEvent(eventId) {
+  setIsLoading(true);
+  try {
+    const deleteDocRef = doc(db, 'events', eventId);
+    await deleteDoc(deleteDocRef);
+
+    // Después de eliminarlo de Firestore, también lo eliminamos del estado local
+    const updatedEvents = events.filter(event => event.id !== eventId);
+    setEvents(updatedEvents);
+    setSelectedEvent(null); // Limpia la selección actual
+
+    //recalcular las fechas marcadas en base a los eventos actualizados
+    //anteriormente en updateEvents
+    const updatedHighlightedDays = updatedEvents.map(eventData => {
+      const fechaInicio = dayjs(eventData.startSelectedDate).toDate();
+      const fechaFin = dayjs(eventData.finalSelectedDate).toDate();
+      return rangeDates(fechaInicio, fechaFin);
+    });
+    setHighlightedDays(updatedHighlightedDays);
+    console.log("Evento eliminado con éxito.");
+  } catch (error) {
+    console.error("Error al eliminar el evento: ", error);
+    } finally {
+    setIsLoading(false);
+  }
 }
 
-//: {};
   return (
     <><><View style={styles.container}>
 
@@ -232,10 +247,7 @@ function EventCard({ events }) {
             value={value}
             loading={isLoading}
             renderLoading={() => <DayCalendarSkeleton />}
-            onChange={(newValue) => setValue(newValue)}
-            //shouldDisableDate={(date) =>
-            //  Object.keys(markedDates).includes(dayjs(date).format('YYYY-MM-DD'))
-            //}
+            onChange={handleDateChange}
             slots={{
               day: ServerDay,
             }}
@@ -249,20 +261,26 @@ function EventCard({ events }) {
         
         <TouchableOpacity onPress={() => router.replace('/local_components/calendar_com/Add_event')}
           style={styles.button}>
+        <CalendarTodayIcon sx={{color: '#FFFFFF', fontSize: 33}} style={{ marginLeft: 5}}/>
         <Text style={styles.buttonText}>Agregar evento</Text>
         </TouchableOpacity>
 
         <View style={styles.eventDetailsContainer}>
           {selectedEvent ? (
-            selectedEvent.map((event, index) => (
-              <View key={event.id || index} style={EventCard}>
-                <Text style={styles.eventTitle}>{event.nameEvent}</Text>
-                <Text style={styles.eventDate}>
-                  Desde: {dayjs(event.startSelectedDate).format('hh:mm A')}
-                  {' '} - Hasta: {dayjs(event.finalSelectedDate).format('hh:mm A')}
+            selectedEvent.map((event) => (
+              <>
+              <Text style={styles.eventTitle}>{event.nameEvent}</Text>
+              <View style={styles.eventCard}>
+                <Text style={styles.eventTime}>
+                  Desde: {event.startSelectedTime} - Hasta: {event.finalSelectedTime}
                 </Text>
-                <Text style={styles.eventDescription}>{event.description}</Text>
+                <CreateIcon size={24} color="disabled" style={{ marginLeft: 20}}/>
+                <TouchableOpacity onPress={() => deleteEvent(event.id)}>
+                  <DeleteIcon size={24} color="disabled" style={{ marginLeft: 10}}/>
+                </TouchableOpacity>
+
               </View>
+              </>
             ))
         ) : (
           <Text style={styles.noEventText}>No hay eventos para esta fecha.</Text>
@@ -299,10 +317,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginTop: 20,
   },
-  selectedDay: {
-    backgroundColor: '#63D2D9',
-    //border: '#63D2D9',
-  },
   eventDetails: {
     marginTop: 20,
     padding: 10,
@@ -315,6 +329,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,
+    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -323,6 +338,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+    marginBottom: 5,
   },
   eventTime: {
     fontSize: 14,
@@ -330,12 +346,6 @@ const styles = StyleSheet.create({
   },
   eventActions: {
     flexDirection: 'row',
-  },
-  editButton: {
-    marginRight: 10,
-  },
-  deleteButton: {
-    marginLeft: 10,
   },
   noEventText: {
     color: '#666',
@@ -358,13 +368,19 @@ const styles = StyleSheet.create({
   },
   button: {
       backgroundColor: '#63D2D9',
-      padding: 20,
+      padding: 15,
       borderRadius: 10,
-      marginTop: 20
+      marginTop: 20,
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
   },
   buttonText: {
       color: '#FFFFFF',
       textAlign: 'center',
       fontFamily: 'popins-bold',
+      marginRight: 52,
+      fontSize: 18,
 }
 });
