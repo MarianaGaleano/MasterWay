@@ -187,6 +187,7 @@ function handleDayClick(day) {
 
 console.log("eventos: ", events);
 console.log("selectedEvents", selectedEvent);
+console.log("eventToEdit: ", JSON.stringify(events));
 
 const handleDateChange = (newValue) => {
     setValue(newValue)
@@ -274,7 +275,18 @@ async function deleteEvent(eventId) {
                 <Text style={styles.eventTime}>
                   Desde: {event.startSelectedTime} - Hasta: {event.finalSelectedTime}
                 </Text>
-                <CreateIcon size={24} color="disabled" style={{ marginLeft: 20}}/>
+                <TouchableOpacity 
+                  onPress={() =>
+                    router.replace({
+                      pathname: '/local_components/calendar_com/Add_event',
+                      params: {
+                        isEditing: 'true', // Activar modo edición
+                        eventToEdit: JSON.stringify(event), // Convertir el evento en JSON
+                      },
+                    })
+                }>
+                <CreateIcon size={24} color="disabled" style={{ marginLeft: 100}}/>
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => deleteEvent(event.id)}>
                   <DeleteIcon size={24} color="disabled" style={{ marginLeft: 10}}/>
                 </TouchableOpacity>
@@ -380,7 +392,7 @@ const styles = StyleSheet.create({
       color: '#FFFFFF',
       textAlign: 'center',
       fontFamily: 'popins-bold',
-      marginRight: 52,
+      marginRight: 80,
       fontSize: 18,
 }
 });

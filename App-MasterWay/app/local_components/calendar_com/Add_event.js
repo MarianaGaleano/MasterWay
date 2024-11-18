@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
-import { useRouter } from 'expo-router';
-import { db } from './../../../configs/FirebaseConfig';
+import { useRouter} from 'expo-router';
+import { useSearchParams } from 'expo-router';
+import {useParams} from 'react-router-dom';
+import { db } from '../../../configs/FirebaseConfig';
 import { addDoc, collection } from 'firebase/firestore';
-import { auth } from './../../../configs/FirebaseConfig';
+import { auth } from '../../../configs/FirebaseConfig';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';  
 import { useNavigation } from 'expo-router';
@@ -18,9 +20,16 @@ import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import { setDoc } from 'firebase/firestore';
 
 export default function Add_Event() {
-
   const router = useRouter();
   const user = auth.currentUser;
+  const { isEditing = 'false', eventToEdit} = useParams();
+  //isEditing = router.query?.isEditing === 'true';
+  //eventToEdit = router.query?.eventToEdit ? JSON.parse(router.query.eventToEdit) : null;
+
+  console.log(useParams());
+  console.log("isEditing:", isEditing);
+  console.log("eventToEdit:", eventToEdit);
+
   const navigation = useNavigation();
   const [startSelectedDate, startsetSelectedDate] = useState(dayjs(new Date()));
   const [finalSelectedDate, finalsetSelectedDate] = useState(dayjs(new Date()));
@@ -29,10 +38,9 @@ export default function Add_Event() {
   const [isToggled, setIsToggled] = useState(false);
   const [nameEvent] = useState('');
   const [description] = useState('');
-  //const [startDate] = useState('');
-  //const [startTime] = useState('');
-  //const [endDate] = useState('');
-  //const [endTime] = useState('');
+  //const [isEditing, setIsEditing] = useState(false);
+  //const [eventToEdit, setEventToEdit] = useState(null); // Evento que se está editando
+  
 
   const [newEvent, setnewEvent] = useState({
     nameEvent,
@@ -42,7 +50,31 @@ export default function Add_Event() {
     startSelectedTime,
     finalSelectedTime,
   })
+
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+  useEffect(() => {
+    //console.log('router.query:', router.query);
+    if (isEditing === 'true' && eventToEdit) {
+      const parsedEvent = JSON.parse(eventToEdit); // Convertimos de vuelta el JSON a un objeto
+      setnewEvent({
+        nameEvent: parsedEvent.nameEvent,
+        description: parsedEvent.description,
+        startSelectedDate: dayjs(parsedEvent.startSelectedDate),
+        finalSelectedDate: dayjs(parsedEvent.finalSelectedDate),
+        startSelectedTime: dayjs(parsedEvent.startSelectedTime),
+        finalSelectedTime: dayjs(parsedEvent.finalSelectedTime),
+      });
+      setIsDataLoaded(true);
+    } else {
+      setIsDataLoaded(true); // Para casos en que no haya datos para editar
+    }
+  }, [router.query]);;
   
+  if (!isDataLoaded) {
+    return <Text>Cargando...</Text>; // Placeholder mientras se cargan los datos
+  }
+
   const UpdateEvent = async()=>{
     //if (!newEvent.nameEvent || !newEvent.description || !newEvent.startSelectedDate || !newEvent.finalSelectedDate) {
     //  alert("por favor llena todos los campos");
@@ -63,11 +95,18 @@ export default function Add_Event() {
     finalSelectedTime: formattedEndTime,
     };
 
-    const eventRef = collection(db, "events");
-    await addDoc(eventRef, eventToSave);
+    if (isEditing && eventToEdit) {
+      // Actualizar evento existente
+      const eventRef = doc(db, 'events', eventToEdit.id);
+      await setDoc(eventRef, eventToSave, { merge: true }); // Actualización parcial
+    }
+    else {
+      const eventRef = collection(db, "events");
+      await addDoc(eventRef, eventToSave);
+    }
     router.replace('../../calendar');  
     }
-
+    
   //constantes que van a cambiar el estado de los campos;
   const handleNameChange = (text) => {
     setnewEvent((prevEvent) => ({
@@ -119,34 +158,6 @@ export default function Add_Event() {
       finalsetSelectedTime(dayjs().hour(23).minute(59)); // cambiar a 11:59pm
     }
   };
-
-  //const [time, setTime] = useState(new ());
-  //const router = useRouter();
-  //const [userData, setUserData] = useState(null);
-  //const [editingField, setEditingField] = useState(null); // Controla qué campo está en modo de edición
-  //const [editedData, setEditedData] = useState({}); // Almacena los cambios que el usuario hace
-
- // useEffect(() => {
- //   const getUserData = async () => {
-  //    if (auth.currentUser) {
-  //      const userDocRef = doc(db, 'users', auth.currentUser.uid);
-  //      const userDoc = await getDoc(userDocRef);
-  //      if (userDoc.exists()) {
-  //        setUserData(userDoc.data());
-  //        setEditedData(userDoc.data()); // Inicializa los valores editados con los datos actuales
-  //      }
-  //    }
-  //  };
-  //  getUserData();
- // }, []);
-
-//  const handleSave = async (field) => {
-//    if (auth.currentUser) {
-//      const userDocRef = doc(db, 'users', auth.currentUser.uid);
-//      await updateDoc(userDocRef, { [field]: editedData[field] });
-//    }
-//    setEditingField(null); // Sale del modo de edición
-//  };
 
   return (
 
@@ -230,7 +241,7 @@ export default function Add_Event() {
 
     <TouchableOpacity onPress={() => UpdateEvent()}
     style={styles.button}>
-    <Text style={styles.buttonText}>Guardar</Text>
+    <Text style={styles.buttonText}>{isEditing ? 'Actualizar' : 'Guardar'}</Text>
     </TouchableOpacity>
     </View></>        
 
