@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import { useRouter} from 'expo-router';
 import { useSearchParams } from 'expo-router';
-import {useParams} from 'react-router-dom';
+import {useParams, useLocation} from 'react-router-dom';
 import { db } from '../../../configs/FirebaseConfig';
 import { addDoc, collection } from 'firebase/firestore';
 import { auth } from '../../../configs/FirebaseConfig';
@@ -22,13 +22,16 @@ import { setDoc } from 'firebase/firestore';
 export default function Add_Event() {
   const router = useRouter();
   const user = auth.currentUser;
-  const { isEditing = 'false', eventToEdit} = useParams();
-  //isEditing = router.query?.isEditing === 'true';
-  //eventToEdit = router.query?.eventToEdit ? JSON.parse(router.query.eventToEdit) : null;
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  
+  const isEditing = queryParams.get('isEditing');
+  const eventToEdit = queryParams.get('eventToEdit');
+  const parsedEvent = eventToEdit ? JSON.parse(decodeURIComponent(eventToEdit)) : null;
 
   console.log(useParams());
   console.log("isEditing:", isEditing);
-  console.log("eventToEdit:", eventToEdit);
+  console.log("eventToEdit:", parsedEvent);
 
   const navigation = useNavigation();
   const [startSelectedDate, startsetSelectedDate] = useState(dayjs(new Date()));
@@ -54,9 +57,7 @@ export default function Add_Event() {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   useEffect(() => {
-    //console.log('router.query:', router.query);
-    if (isEditing === 'true' && eventToEdit) {
-      const parsedEvent = JSON.parse(eventToEdit); // Convertimos de vuelta el JSON a un objeto
+    if (isEditing === 'true' && parsedEvent) {
       setnewEvent({
         nameEvent: parsedEvent.nameEvent,
         description: parsedEvent.description,
@@ -69,7 +70,8 @@ export default function Add_Event() {
     } else {
       setIsDataLoaded(true); // Para casos en que no haya datos para editar
     }
-  }, [router.query]);;
+  }, [isEditing, parsedEvent]); // Se agrega dependencia de parsedEvent
+  
   
   if (!isDataLoaded) {
     return <Text>Cargando...</Text>; // Placeholder mientras se cargan los datos

@@ -120,6 +120,19 @@ export default function Calendar() {
       };  
     }
 
+    if (start && end && selected) {
+      style = {
+        ...style,
+        borderRadius: 50,
+        margin: 0,
+        padding: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+        display: 'flex',
+        position: 'relative',
+      };  
+    }
+
     return (
       <PickersDay
         {...other}
@@ -187,7 +200,7 @@ function handleDayClick(day) {
 
 console.log("eventos: ", events);
 console.log("selectedEvents", selectedEvent);
-console.log("eventToEdit: ", JSON.stringify(events));
+console.log("eventToEdit: ", encodeURIComponent(JSON.stringify(events)));
 
 const handleDateChange = (newValue) => {
     setValue(newValue)
@@ -281,7 +294,7 @@ async function deleteEvent(eventId) {
                       pathname: '/local_components/calendar_com/Add_event',
                       params: {
                         isEditing: 'true', // Activar modo edición
-                        eventToEdit: JSON.stringify(event), // Convertir el evento en JSON
+                        eventToEdit: encodeURIComponent(JSON.stringify(event)), // Convertir el evento en JSON
                       },
                     })
                 }>
