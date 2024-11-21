@@ -6,7 +6,7 @@ import { query, where } from 'firebase/firestore';
 import { PickersDay } from '@mui/x-date-pickers/PickersDay';
 import { auth } from './../configs/FirebaseConfig';
 import { db } from './../configs/FirebaseConfig';
-import { doc, deleteDoc, collection, getDocs} from 'firebase/firestore';
+import { doc, deleteDoc, collection, getDocs, getDoc} from 'firebase/firestore';
 import { Link, useRouter, useNavigation} from 'expo-router';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -16,10 +16,12 @@ import './local_components/calendar_com/calendar_comp';
 import CreateIcon from '@mui/icons-material/Create';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 
 export default function Calendar() {
   const router = useRouter();
+  const [userData, setUserData] = useState(null);
   const backImage = 'https://via.placeholder.com/40';
   const profileImage = 'https://via.placeholder.com/40';
   const [value, setValue] = React.useState(new Date());
@@ -29,12 +31,16 @@ export default function Calendar() {
   const [forceUpdate, setForceUpdate] = useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [highlightedDays, setHighlightedDays] = React.useState([]); //variables que capturan las fechas marcadas
-
   //obtener los eventos de la base de datos
   //que fueron agregados por el usuario
 
   async function fetchEvents() {
       const user = auth.currentUser;
+      const userDocRef = doc(db, 'users', auth.currentUser.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        setUserData(userDoc.data());
+      }
       const eventsDocRef = query(
         collection(db, 'events'), where("userId", "==", user.uid)
         ); 
@@ -68,69 +74,49 @@ export default function Calendar() {
       .catch(() => setIsLoading(false));
   }, []);
 
-
+  //funcion para personalizar fechas que tengan evento
   function CustomDay ({ selected, start, end, ...other }) {
-    let style = { backgroundColor: selected ? '#63D2D9' : '' };
-
-    //if (!selected && !start && !end) {
-    //    style.backgroundColor = '#ADD8E6';
-    //}
-
+    let style = { 
+      backgroundColor: selected ? '#63D2D9' : '',
+      color: selected ? '#FFFFFF': '#63D2D9',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'relative',
+      margin: 0,
+      padding: 0,
+    };
+  
+    // Estilo para la fecha de inicio de un evento
     if (start) {
       style = {
         ...style,
-        
-        //width: '80%',
-        //height: '80%',
-        borderRadius: '50% 0 0 50%',
-        marginLeft: 0,
-        margin: 0,
-        padding: 4,
-        justifyContent: 'center',
-        alignItems: 'center',
-        display: 'flex',
-        position: 'relative',
+        borderRadius: '50% 0 0 50%', // Borde redondeado en el lado izquierdo
       };
     }
   
+    // Estilo para la fecha final de un evento
     if (end) {
       style = {
         ...style,
-        borderRadius: '0 50% 50% 0',
-        marginRight: 0,
-        margin: 0,
-        padding: 4,
-        justifyContent: 'center',
-        alignItems: 'center',
-        display: 'flex',
-        position: 'relative',
+        borderRadius: '0 50% 50% 0', // Borde redondeado en el lado derecho
       };
     }
   
+    // Estilo para fechas seleccionadas intermedias (no inicio ni fin)
     if (!start && !end && selected) {
       style = {
         ...style,
-        borderRadius: 0,
-        //margin: 0,
-        padding: 4,
-        justifyContent: 'center',
-        alignItems: 'center',
-        display: 'flex',
-        position: 'relative',
-      };  
+        borderRadius: 0, // Sin bordes redondeados
+      };
     }
-
+  
+    // Estilo para fechas seleccionadas que son tanto inicio como fin
     if (start && end && selected) {
       style = {
         ...style,
-        borderRadius: 50,
-        margin: 0,
-        padding: 4,
-        justifyContent: 'center',
-        alignItems: 'center',
-        display: 'flex',
-        position: 'relative',
-      };  
+        borderRadius: '50%', // Borde completamente redondeado
+      };
     }
 
     return (
@@ -166,7 +152,8 @@ function ServerDay(props) {
   );
 }
 
-
+//funcion para obtener las fechas
+//que se encuentran entre las fechas inicio y fin
 function rangeDates(startDate,endDate) {
   const start_date = dayjs(startDate).toDate();
   const end_date = dayjs(endDate).toDate();
@@ -200,10 +187,16 @@ function handleDayClick(day) {
 
 console.log("eventos: ", events);
 console.log("selectedEvents", selectedEvent);
-console.log("eventToEdit: ", encodeURIComponent(JSON.stringify(events)));
+//console.log("eventToEdit: ", encodeURIComponent(JSON.stringify(events)));
 
 const handleDateChange = (newValue) => {
     setValue(newValue)
+};
+
+//funcion para editar evento
+const editEvent = (event) => {
+  const eventString = encodeURIComponent(JSON.stringify(event)); // Serializa el evento
+  router.push(`/local_components/calendar_com/Add_event?isEditing=true&eventToEdit=${eventString}`);
 };
 
 //funcion para borrar evento
@@ -234,25 +227,28 @@ async function deleteEvent(eventId) {
   }
 }
 
+//interfaz
   return (
     <><><View style={styles.container}>
 
       <TouchableOpacity onPress={() => router.replace('../(tabs)/dashboard')}>
-        <Image
-          source={{ uri: backImage }}
-          style={styles.backImage} />
+      <ArrowBackIcon size={20} sx={"color: #FFFFFF"} style={styles.backImage}/>
       </TouchableOpacity>
 
       <Text style={styles.title}>Calendario</Text>
 
       <TouchableOpacity onPress={() => router.replace('../(tabs)/profile')}>
         <Image
-          source={{ uri: profileImage }}
+          source={
+            userData?.profilePictureUrl
+            ? { uri: userData.profilePictureUrl }
+            : require('./../assets/images/logo.png')
+            }
           style={styles.profileImage} />
       </TouchableOpacity>
     </View><>
       
-      
+      <View style={styles.calendarContainer}>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
 
           <StaticDatePicker
@@ -262,6 +258,19 @@ async function deleteEvent(eventId) {
             loading={isLoading}
             renderLoading={() => <DayCalendarSkeleton />}
             onChange={handleDateChange}
+            sx={{
+              //'.MuiPickersToolbar-root': {
+              //  color: '#63D2D9',
+                
+              //},
+              '.MuiPickersLayout-root': {
+                color: '#63D2D9',
+              }
+              //'.MuiPickersDateCalendar-root': {
+              //  color: '#63D2D9',
+              //}
+            }}
+
             slots={{
               day: ServerDay,
             }}
@@ -271,7 +280,8 @@ async function deleteEvent(eventId) {
               },
             }}
             renderInput={(params) => <TextField {...params} />} />
-        </LocalizationProvider></></>
+        </LocalizationProvider>
+        </View></></>
         
         <TouchableOpacity onPress={() => router.replace('/local_components/calendar_com/Add_event')}
           style={styles.button}>
@@ -289,15 +299,7 @@ async function deleteEvent(eventId) {
                   Desde: {event.startSelectedTime} - Hasta: {event.finalSelectedTime}
                 </Text>
                 <TouchableOpacity 
-                  onPress={() =>
-                    router.replace({
-                      pathname: '/local_components/calendar_com/Add_event',
-                      params: {
-                        isEditing: 'true', // Activar modo edición
-                        eventToEdit: encodeURIComponent(JSON.stringify(event)), // Convertir el evento en JSON
-                      },
-                    })
-                }>
+                  onPress={() =>editEvent(event)}>
                 <CreateIcon size={24} color="disabled" style={{ marginLeft: 100}}/>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => deleteEvent(event.id)}>
@@ -324,23 +326,34 @@ const styles = StyleSheet.create({
   eventDetailsContainer: {
     marginTop: 20,
   },
+  calendarContainer: {
+    borderWidth: 3,
+    borderColor: '#63D2D9',
+    borderRadius: 15,
+    padding: 5, 
+    margin: 10,
+  },
   title: {
     fontFamily: 'popins-bold',
     fontSize: 30,
     margintop: 20,
     color: '#63D2D9',
+    marginBottom: 20,
   },
   profileImage: {
     width: 65,
     height: 65,
     borderRadius: 50,
-    marginTop: 20,
+    marginTop: 5,
+    marginBottom: 20,
   },
   backImage: {
+    backgroundColor: '#63D2D9',
     width: 65,
     height: 65,
-    borderRadius: 50,
-    marginTop: 20,
+    borderRadius: '50%',
+    marginTop: 5,
+    marginBottom: 20,
   },
   eventDetails: {
     marginTop: 20,

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import { useRouter} from 'expo-router';
-import { useSearchParams } from 'expo-router';
-import {useParams, useLocation} from 'react-router-dom';
+import { useLocalSearchParams } from 'expo-router';
 import { db } from '../../../configs/FirebaseConfig';
-import { addDoc, collection } from 'firebase/firestore';
+import { doc, addDoc, collection } from 'firebase/firestore';
 import { auth } from '../../../configs/FirebaseConfig';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';  
@@ -22,16 +21,16 @@ import { setDoc } from 'firebase/firestore';
 export default function Add_Event() {
   const router = useRouter();
   const user = auth.currentUser;
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
+  const queryParams = useLocalSearchParams();
   
-  const isEditing = queryParams.get('isEditing');
-  const eventToEdit = queryParams.get('eventToEdit');
+  const isEditing = queryParams.isEditing === 'true'; // Asegúrate de convertir a booleano
+  const eventToEdit = queryParams.eventToEdit;
   const parsedEvent = eventToEdit ? JSON.parse(decodeURIComponent(eventToEdit)) : null;
 
-  console.log(useParams());
-  console.log("isEditing:", isEditing);
-  console.log("eventToEdit:", parsedEvent);
+  //console.log(useLocalSearchParams());
+  //console.log("isEditing:", isEditing);
+  //console.log("eventToEdit:", parsedEvent);
+  //console.log("startSelectedDateP ", parsedEvent.startSelectedDate)
 
   const navigation = useNavigation();
   const [startSelectedDate, startsetSelectedDate] = useState(dayjs(new Date()));
@@ -41,8 +40,6 @@ export default function Add_Event() {
   const [isToggled, setIsToggled] = useState(false);
   const [nameEvent] = useState('');
   const [description] = useState('');
-  //const [isEditing, setIsEditing] = useState(false);
-  //const [eventToEdit, setEventToEdit] = useState(null); // Evento que se está editando
   
 
   const [newEvent, setnewEvent] = useState({
@@ -57,20 +54,18 @@ export default function Add_Event() {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   useEffect(() => {
-    if (isEditing === 'true' && parsedEvent) {
+    if (isEditing && parsedEvent && !isDataLoaded) {
       setnewEvent({
-        nameEvent: parsedEvent.nameEvent,
-        description: parsedEvent.description,
+        nameEvent: parsedEvent.nameEvent || '',
+        description: parsedEvent.description || '',
         startSelectedDate: dayjs(parsedEvent.startSelectedDate),
         finalSelectedDate: dayjs(parsedEvent.finalSelectedDate),
-        startSelectedTime: dayjs(parsedEvent.startSelectedTime),
-        finalSelectedTime: dayjs(parsedEvent.finalSelectedTime),
+        startSelectedTime: dayjs(parsedEvent.startSelectedTime, 'HH:mm:ss'),
+        finalSelectedTime: dayjs(parsedEvent.finalSelectedTime, 'HH:mm:ss'),
       });
-      setIsDataLoaded(true);
-    } else {
-      setIsDataLoaded(true); // Para casos en que no haya datos para editar
     }
-  }, [isEditing, parsedEvent]); // Se agrega dependencia de parsedEvent
+      setIsDataLoaded(true);
+  }, [isEditing, parsedEvent, isDataLoaded]); // Se agrega dependencia de parsedEvent
   
   
   if (!isDataLoaded) {
@@ -78,6 +73,7 @@ export default function Add_Event() {
   }
 
   const UpdateEvent = async()=>{
+    try{
     //if (!newEvent.nameEvent || !newEvent.description || !newEvent.startSelectedDate || !newEvent.finalSelectedDate) {
     //  alert("por favor llena todos los campos");
     //  return;
@@ -99,15 +95,21 @@ export default function Add_Event() {
 
     if (isEditing && eventToEdit) {
       // Actualizar evento existente
-      const eventRef = doc(db, 'events', eventToEdit.id);
+      const eventRef = doc(db, 'events', parsedEvent.id);
       await setDoc(eventRef, eventToSave, { merge: true }); // Actualización parcial
     }
     else {
       const eventRef = collection(db, "events");
       await addDoc(eventRef, eventToSave);
     }
-    router.replace('../../calendar');  
-    }
+
+    alert(isEditing === 'true' ? 'Evento actualizado con éxito' : 'Evento guardado con éxito');
+    router.replace('../../calendar');
+  } catch (error) {
+    console.error('Error al guardar el evento:', error);
+    alert('Hubo un error al guardar el evento. Por favor, inténtalo nuevamente.');
+  }
+    };
     
   //constantes que van a cambiar el estado de los campos;
   const handleNameChange = (text) => {
@@ -128,28 +130,28 @@ export default function Add_Event() {
   const handlestartDateChange = (newDate) => {
     setnewEvent((prevEvent) => ({
       ...prevEvent,
-      startSelectedDate: newDate,
+      startSelectedDate: dayjs(newDate),
     }));
   };
 
   const handlefinalDateChange = (newDate) => {
     setnewEvent((prevEvent) => ({
       ...prevEvent,
-      finalSelectedDate: newDate,
+      finalSelectedDate: dayjs(newDate),
     }));
   };
   
   const handlestartTimeChange = (newTime) => {
     setnewEvent((prevEvent) => ({
       ...prevEvent,
-      startSelectedTime: newTime,
+      startSelectedTime: dayjs(newTime, 'HH:mm:ss'),
     }));
   };
   
   const handlefinalTimeChange = (newTime) => {
     setnewEvent((prevEvent) => ({
       ...prevEvent,
-      finalSelectedTime: newTime,
+      finalSelectedTime: dayjs(newTime, 'HH:mm:ss'),
     }));
   };
 
@@ -207,12 +209,12 @@ export default function Add_Event() {
           <View style={styles.row}>
           <Text style={styles.label}>Fecha inicio:</Text>
             <DatePicker
-            value={startSelectedDate}
+            value={newEvent.startSelectedDate}
             type={Date}
             onChange={handlestartDateChange}
             />
             <TimePicker
-            value={startSelectedTime}
+            value={newEvent.startSelectedTime}
             onChange={handlestartTimeChange}
             disabled={isToggled}
             />
@@ -221,12 +223,12 @@ export default function Add_Event() {
           <View style={styles.row}>
           <Text style={styles.label}>Fecha  final:</Text>
             <DatePicker
-            value={finalSelectedDate}
+            value={newEvent.finalSelectedDate}
             type={Date}
             onChange={handlefinalDateChange}
             />
             <TimePicker
-            value={finalSelectedTime}
+            value={newEvent.finalSelectedTime}
             onChange={handlefinalTimeChange}
             disabled={isToggled}
             />
