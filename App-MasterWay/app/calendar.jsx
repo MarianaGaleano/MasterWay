@@ -12,6 +12,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton';
+import { createTheme, ThemeProvider } from '@mui/material/styles'
 import './local_components/calendar_com/calendar_comp';
 import CreateIcon from '@mui/icons-material/Create';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -84,7 +85,7 @@ export default function Calendar() {
       alignItems: 'center',
       position: 'relative',
       margin: 0,
-      padding: 0,
+      padding: 20,
     };
   
     // Estilo para la fecha de inicio de un evento
@@ -227,6 +228,69 @@ async function deleteEvent(eventId) {
   }
 }
 
+//personalizar calendario
+const newTheme = createTheme({
+  components: {
+    MuiPickersToolbar: {
+      styleOverrides: {
+        root: {
+          position: 'relative',
+          backgroundColor: 'transparent', // Fondo azul del encabezado del calendario
+          color: '#67C6CC', // Texto blanco en el encabezado
+          border: '0px solid #67C6CC',
+          borderWidth: 1,
+          borderRadius: 5,
+          padding: 15, 
+          margin: 0,
+          marginLeft: 0,
+        },
+      },
+    },
+    MuiPickersCalendarHeader: {
+      styleOverrides: {
+        root: {
+          color: '#67C6CC', // Texto azul del mes
+          padding: 5,
+          marginRight: 10,
+          marginLeft: 15,
+        },
+        switchViewButton: {
+          color: '#67C6CC'
+        },
+      },
+    },
+    MuiPickersArrowSwitcher: {
+      styleOverrides: {
+        button: {
+          color: '#67C6CC', // Color del ícono del  switch calendario
+        },
+      },
+    },
+    MuiDayCalendar: {
+      styleOverrides: {
+        weekDayLabel: {
+          color: '#67C6CC', // Color de dias de la semana
+        },
+      },
+    },
+    MuiPickersLayout: {
+      styleOverrides: {
+        root: {
+          borderRadius: '16px', // Redondear las esquinas
+          overflow: 'hidden',  // Asegurar que no haya contenido desbordado
+        },
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: {
+          display: 'none', // Ocultar botones "Cancel" y "OK"
+        },
+      },
+    },
+  },
+});
+
 //interfaz
   return (
     <><><View style={styles.container}>
@@ -250,7 +314,7 @@ async function deleteEvent(eventId) {
       
       <View style={styles.calendarContainer}>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
-
+        <ThemeProvider theme={newTheme}>
           <StaticDatePicker
             orientation="portrait"
             openTo='day'
@@ -258,19 +322,6 @@ async function deleteEvent(eventId) {
             loading={isLoading}
             renderLoading={() => <DayCalendarSkeleton />}
             onChange={handleDateChange}
-            sx={{
-              //'.MuiPickersToolbar-root': {
-              //  color: '#63D2D9',
-                
-              //},
-              '.MuiPickersLayout-root': {
-                color: '#63D2D9',
-              }
-              //'.MuiPickersDateCalendar-root': {
-              //  color: '#63D2D9',
-              //}
-            }}
-
             slots={{
               day: ServerDay,
             }}
@@ -280,14 +331,9 @@ async function deleteEvent(eventId) {
               },
             }}
             renderInput={(params) => <TextField {...params} />} />
+        </ThemeProvider>
         </LocalizationProvider>
-        </View></></>
-        
-        <TouchableOpacity onPress={() => router.replace('/local_components/calendar_com/Add_event')}
-          style={styles.button}>
-        <CalendarTodayIcon sx={{color: '#FFFFFF', fontSize: 33}} style={{ marginLeft: 5}}/>
-        <Text style={styles.buttonText}>Agregar evento</Text>
-        </TouchableOpacity>
+      </View></></>
 
         <View style={styles.eventDetailsContainer}>
           {selectedEvent ? (
@@ -312,6 +358,11 @@ async function deleteEvent(eventId) {
         ) : (
           <Text style={styles.noEventText}>No hay eventos para esta fecha.</Text>
         )}
+        <TouchableOpacity onPress={() => router.replace('/local_components/calendar_com/Add_event')}
+          style={styles.button}>
+          <CalendarTodayIcon sx={{color: '#FFFFFF', fontSize: 33}} style={{ marginLeft: 5}}/>
+          <Text style={styles.buttonText}>Agregar evento</Text>
+        </TouchableOpacity>
         </View></>
   );
 }
@@ -330,8 +381,8 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#63D2D9',
     borderRadius: 15,
-    padding: 5, 
-    margin: 10,
+    padding: 0, 
+    margin: 12,
   },
   title: {
     fontFamily: 'popins-bold',
