@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native'; // Importa useNavigati
 import { Colors } from './../../constants/Colors';
 import { useRouter } from 'expo-router';
 
-export default function TravelListItem({ recomendacion }) { 
+export default function TravelListItem({recomendacion}) { 
     const router=useRouter();
     return (
         <TouchableOpacity 
@@ -62,6 +62,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         borderRadius: 10,
         backgroundColor: Colors.PRINCIPAL,
-        fontSize: 11,
-    },
+        fontSize: 11,
+    },
 });

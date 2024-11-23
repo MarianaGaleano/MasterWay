@@ -26,20 +26,26 @@ const Estrellas = ({ calificacion }) => {
 export default function RecomendacionInfo({ recomendacion }) {
   return (
     <View>
+      {/* Imagen de la recomendación */}
       <Image 
-        source={{uri: recomendacion.imageUrl}}
+        source={{ uri: recomendacion?.imageUrl }}
         style={{
           width: '100%',
           height: 400,
           objectFit: 'cover',
         }}
       />
+      
+      {/* Contenedor del título y el icono de favoritos */}
       <View style={styles.tituloContainer}>
         <Text style={styles.titulo}>
           {recomendacion?.NombreDelLugar}
         </Text>
-          <MarkFav recomendacion={recomendacion}/>
+        {/* Componente de favoritos */}
+        <MarkFav recomendacion={recomendacion} />
       </View>
+      
+      {/* Información adicional de la recomendación */}
       <View style={{ padding: 20 }}>
         <View>
           <Text style={styles.ubicacion}>
@@ -50,6 +56,7 @@ export default function RecomendacionInfo({ recomendacion }) {
           </Text>
         </View>
         
+        {/* Calificación con estrellas */}
         <View style={styles.calificacionContainer}>
           <Text style={styles.calificacionTexto}>
             Calificación:
@@ -60,11 +67,12 @@ export default function RecomendacionInfo({ recomendacion }) {
           </Text>
         </View>
 
-        {/* Nuevo subtítulo para la descripción */}
+        {/* Subtítulo para la descripción */}
         <Text style={styles.subtitulo}>
           Descripción
         </Text>
 
+        {/* Contenedor de la descripción */}
         <View style={styles.descripcionContainer}>
           <Text style={styles.descripcion}>
             {recomendacion?.Descripción}
@@ -124,17 +132,17 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   subtitulo: {
-    fontSize: 18,  // Tamaño del subtítulo
+    fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.PRIMARY,  // Color primario
-    marginTop: 20,  // Espacio superior para separación
-    marginBottom: 5, // Espacio inferior para separación con la descripción
+    color: Colors.PRIMARY,
+    marginTop: 20,
+    marginBottom: 5,
   },
   descripcionContainer: {
-    marginTop: 10,  // Espacio entre subtítulo y descripción
+    marginTop: 10,
   },
   descripcion: {
     fontSize: 16,
     color: Colors.BLACK,
-  },
+  },
 });

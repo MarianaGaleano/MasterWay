@@ -1,52 +1,61 @@
-import { View, Pressable } from 'react-native';
+import { View, Pressable, Alert } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import Shared from '../Shared/Shared';
-import { useUser } from '@clerk/clerk-expo';
+import Shared from './RecomendacionesDetails/Shared';
 
 export default function MarkFav({ recomendacion }) {
-    const { user } = useUser();
-    const [favList, setFavList] = useState([]); // Asegúrate de inicializar como un array vacío
+    const [favList, setFavList] = useState([]);
 
     useEffect(() => {
-        if (user) {
-            GetFav();
-        }
-    }, [user]);
+        GetFav();
+    }, []);
 
     const GetFav = async () => {
-        const result = await Shared.GetFavList(user);
-        setFavList(result?.favorites || []); // Asegúrate de que favList sea un array
+        const result = await Shared.GetFavList();
+        setFavList(result || []);
     };
 
     const AddToFav = async () => {
         if (recomendacion?.id) {
-            const favResult = [...favList, recomendacion.id]; // Crear una nueva lista de favoritos
-            console.log("Updating favorites:", favResult); // Para depuración
-            await Shared.UpdateFav(user, favResult);
-            setFavList(favResult); // Actualizar favList directamente
+            const favResult = [...favList, recomendacion.id];
+
+            try {
+                await Shared.UpdateFav(favResult);
+                setFavList(favResult);
+                Alert.alert("Guardado", "Recomendación guardada en favoritos.");
+            } catch (error) {
+                console.error("Error al agregar a favoritos:", error);
+                Alert.alert("Error", "No se pudo guardar en favoritos.");
+            }
         } else {
-            console.warn("Recommendation ID is undefined"); // Mensaje de advertencia si id es undefined
+            console.warn("ID de la recomendación no definido");
         }
     };
 
-    const removeFromFavorite=async()=>{
-        const favResult = favList.filter(item=>item!==recomendacion.id)
-        await Shared.UpdateFav(user, favResult);
-        GetFav();
-    }
+    const removeFromFavorite = async () => {
+        const favResult = favList.filter(item => item !== recomendacion.id);
+
+        try {
+            await Shared.UpdateFav(favResult);
+            setFavList(favResult);
+            Alert.alert("Eliminado", "Recomendación eliminada de favoritos.");
+        } catch (error) {
+            console.error("Error al eliminar de favoritos:", error);
+            Alert.alert("Error", "No se pudo eliminar de favoritos.");
+        }
+    };
+
     return (
         <View>
             {favList.includes(recomendacion.id) ? (
                 <Pressable onPress={removeFromFavorite}>
-                    <Ionicons name="heart" size={30} color="red" /> {/* Corazón lleno rojo */}
+                    <Ionicons name="heart" size={30} color="red" />
                 </Pressable>
             ) : (
                 <Pressable onPress={AddToFav}>
-                    <Ionicons name="heart-outline" size={30} color="gray" /> {/* Corazón contorno gris */}
+                    <Ionicons name="heart-outline" size={30} color="gray" />
                 </Pressable>
             )}
         </View>
-    );
+    );
 }
-
