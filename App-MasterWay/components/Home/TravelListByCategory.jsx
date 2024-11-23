@@ -1,62 +1,92 @@
-// TravelListByCategory.js
-import { View, FlatList, ActivityIndicator } from "react-native";
+import { View, FlatList, ActivityIndicator, StyleSheet } from "react-native";
 import React, { useEffect, useState } from 'react';
-import Category from './Category'; // Asegúrate de que este componente esté definido
-import TravelListItem from './TravelListItem'; // Asegúrate de que este componente esté definido
+import Category from './Category';
+import TravelListItem from './TravelListItem';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from './../../configs/FirebaseConfig'; // Ajusta la ruta según tu configuración
-
+import { db } from './../../configs/FirebaseConfig';
+import Search from './Search'; // Importa correctamente el componente Search
 
 export default function TravelListByCategory() {
     const [travelList, setTravelList] = useState([]);
     const [loader, setLoader] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState('Hoteles'); // Categoría seleccionada
+    const [listKey, setListKey] = useState('initial');
+    const [queryText, setQueryText] = useState(''); // Estado para el texto de búsqueda
 
-    // Función para obtener la lista de viajes
     const GetTravelList = async (category) => {
-        setLoader(true); // Muestra el loader
+        setLoader(true);
         try {
-            const q = query(collection(db, 'recomendaciones '), where('Category', '==', category)); // Cambia 'Restaurantes' por la categoría que desees filtrar
+            const q = query(collection(db, 'recomendaciones '), where('Category', '==', category));
             const querySnapshot = await getDocs(q);
     
             if (querySnapshot.empty) {
                 console.log("No se encontraron documentos para la categoría especificada.");
-                setTravelList([]); // Asegúrate de limpiar la lista si no hay datos
+                setTravelList([]);
             } else {
                 const travelData = querySnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
-                console.log("Datos obtenidos:", travelData); // Verifica los datos antes de actualizar el estado
-                setTravelList(travelData); // Actualiza el estado con los datos obtenidos
+                console.log("Datos obtenidos:", travelData);
+                setTravelList(travelData);
+
+                // Actualiza la clave para forzar un nuevo render
+                setListKey(category);
             }
         } catch (error) {
             console.error("Error al obtener documentos:", error);
         } finally {
-            setLoader(false); // Oculta el loader
+            setLoader(false);
         }
     };
-    
 
     useEffect(() => {
-        GetTravelList('Hoteles'); // Cambia la categoría inicial según sea necesario
-    }, []);
+        GetTravelList(selectedCategory); // Filtra por categoría seleccionada
+    }, [selectedCategory]);
+
+    // Función que se llama cuando se cambia de categoría
+    const handleCategoryChange = (category) => {
+        setSelectedCategory(category); // Cambiar la categoría
+        setQueryText(''); // Reiniciar la barra de búsqueda al cambiar de categoría
+        GetTravelList(category); // Obtener los elementos de la nueva categoría
+    };
 
     return (
-        <View>
-            <Category category={(value) => GetTravelList(value)} />
+        <View style={styles.container}>
+            {/* Barra de búsqueda arriba */}
+            <Search 
+                onSearch={(results) => setTravelList(results)} 
+                selectedCategory={selectedCategory} 
+                queryText={queryText} // Pasar el estado de búsqueda actual
+                setQueryText={setQueryText} // Función para actualizar el estado de búsqueda
+            />
+            
+            {/* Categorías debajo */}
+            <Category category={handleCategoryChange} />
+            
             {loader ? (
-                <ActivityIndicator size="large" color="#0000ff" /> // Loader mientras se carga la lista
+                <ActivityIndicator size="large" color="#0000ff" />
             ) : (
                 <FlatList
+                    key={listKey} // Se forza el render al cambiar la clave
                     data={travelList}
                     style={{ marginTop: 10 }}
-                    horizontal={true}
+                    numColumns={2} // Muestra 2 columnas
                     renderItem={({ item }) => (
                         <TravelListItem recomendacion={item} />
                     )}
-                    keyExtractor={item => item.id} // Asegúrate de proporcionar una clave única para cada elemento
+                    keyExtractor={item => item.id}
+                    columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 10 }}
                 />
             )}
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        padding: 10, // Espaciado general para los componentes
+    }
+});
+
