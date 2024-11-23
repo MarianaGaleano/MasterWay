@@ -5,14 +5,13 @@ import Shared from './RecomendacionesDetails/Shared';
 
 export default function MarkFav({ recomendacion }) {
     const [favList, setFavList] = useState([]);
-    const userId = "usuarioActual"; // Sustituir por el ID real del usuario autenticado
 
     useEffect(() => {
         GetFav();
     }, []);
 
     const GetFav = async () => {
-        const result = await Shared.GetFavList(userId); // Se pasa userId
+        const result = await Shared.GetFavList();
         setFavList(result || []);
     };
 
@@ -21,7 +20,7 @@ export default function MarkFav({ recomendacion }) {
             const favResult = [...favList, recomendacion.id];
 
             try {
-                await Shared.UpdateFav(favResult, userId); // Se pasa userId
+                await Shared.UpdateFav(favResult);
                 setFavList(favResult);
                 Alert.alert("Guardado", "Recomendación guardada en favoritos.");
             } catch (error) {
@@ -37,7 +36,7 @@ export default function MarkFav({ recomendacion }) {
         const favResult = favList.filter(item => item !== recomendacion.id);
 
         try {
-            await Shared.UpdateFav(favResult, userId); // Se pasa userId
+            await Shared.UpdateFav(favResult);
             setFavList(favResult);
             Alert.alert("Eliminado", "Recomendación eliminada de favoritos.");
         } catch (error) {
@@ -58,5 +57,5 @@ export default function MarkFav({ recomendacion }) {
                 </Pressable>
             )}
         </View>
-    );
+    );
 }

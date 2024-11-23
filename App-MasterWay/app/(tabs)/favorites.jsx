@@ -1,4 +1,4 @@
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Shared from '../../components/RecomendacionesDetails/Shared';
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -6,69 +6,92 @@ import { db } from './../../configs/FirebaseConfig';
 import TravelListItem from '../../components/Home/TravelListItem';
 
 export default function Favorites() {
-    const [favRecomendacionesList, setFavRecomendacionesList] = useState([]); // Datos completos de las recomendaciones
+    const [favIds, setFavIds] = useState([]);
+    const [favRecomendacionesList, setFavRecomendacionesList] = useState([]);
     const [loader, setLoader] = useState(false);
-    const userId = "usuarioActual"; // Sustituir por el ID real del usuario autenticado
 
     useEffect(() => {
         GetFavRecomendacionesIds();
     }, []);
 
-    // Paso 1: Obtener los IDs de los favoritos
     const GetFavRecomendacionesIds = async () => {
         setLoader(true);
-        const result = await Shared.GetFavList(userId); // Se pasa userId para obtener los IDs de los favoritos
+        const result = await Shared.GetFavList();
         console.log('Favoritos obtenidos:', result);
-        GetFavRecomendacionesList(result || []); // Llamamos a la función para obtener los detalles completos
+        setFavIds(result || []);
+        setLoader(false);
+        GetFavRecomendacionesList(result || []);
     };
 
-    // Paso 2: Obtener las recomendaciones completas basadas en los IDs
-    const GetFavRecomendacionesList = async (favIds) => {
-        if (favIds.length > 0) {
+    const GetFavRecomendacionesList = async (favId_) => {
+        if (favId_ && favId_.length > 0) {
             setLoader(true);
             const chunkSize = 10; // Firestore permite máximo 10 IDs por consulta
             const chunks = [];
-
-            // Divide el array de IDs en "chunks" de hasta 10 elementos
-            for (let i = 0; i < favIds.length; i += chunkSize) {
-                chunks.push(favIds.slice(i, i + chunkSize));
+            
+            // Divide el array en chunks de hasta 10 elementos
+            for (let i = 0; i < favId_.length; i += chunkSize) {
+                chunks.push(favId_.slice(i, i + chunkSize));
             }
 
-            // Aquí hacemos la consulta por cada bloque de IDs
-            for (let chunk of chunks) {
-                const q = query(collection(db, 'recomendaciones'), where('id', 'in', chunk)); // Se filtra por los IDs de las recomendaciones
+            const recomendacionList = [];
+            for (let i = 0; i < chunks.length; i++) {
+                const q = query(collection(db, 'recomendaciones '), where('id', 'in', chunks[i]));
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
                     const eventData = querySnapshot.docs.map(doc => ({
                         ...doc.data(),
-                        id: doc.id,  // Agregamos el ID del documento
+                        id: doc.id,
                     }));
-                    setFavRecomendacionesList(prevData => [...prevData, ...eventData]); // Concatenamos las recomendaciones obtenidas
+                    recomendacionList.push(...eventData);
                 }
             }
+            setFavRecomendacionesList(recomendacionList);
             setLoader(false);
-        } else {
-            setLoader(false); // Si no hay favoritos, se detiene el loader
         }
     };
 
     return (
-        <View style={{ padding: 20, marginTop: 20 }}>
-            <Text style={{ fontFamily: 'popins-bold', fontSize: 30 }}>Favoritos</Text>
-
-            <FlatList
-                onRefresh={GetFavRecomendacionesIds}
-                data={favRecomendacionesList}
-                numColumns={2}
-                refreshing={loader}
-                renderItem={({ item }) => (
-                    <View>
-                        <TravelListItem recomendacion={item} /> {/* Renderiza cada recomendación */}
-                    </View>
-                )}
-                keyExtractor={(item) => item.id}
-            />
-        </View>
+        <ScrollView style={styles.container}>
+            <Text style={styles.header}>Favoritos</Text>
+            {loader ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+                <FlatList
+                    onRefresh={GetFavRecomendacionesIds}
+                    data={favRecomendacionesList}
+                    numColumns={2} // Muestra en 2 columnas
+                    refreshing={loader}
+                    renderItem={({ item }) => (
+                        <View style={styles.itemContainer}>
+                            <TravelListItem recomendacion={item} />
+                        </View>
+                    )}
+                    keyExtractor={(item) => item.id}
+                    columnWrapperStyle={styles.columnWrapper}
+                />
+            )}
+        </ScrollView>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        padding: 20,
+        marginTop: 20,
+    },
+    header: {
+        fontFamily: 'popins-bold',
+        fontSize: 30,
+    },
+    itemContainer: {
+        flex: 1, 
+        margin: 0.1,  // Añade un margen alrededor de cada item
+    },
+    columnWrapper: {
+        justifyContent: 'space-between', // Espacio entre columnas
+        marginBottom: 10, // Espacio debajo de cada fila
+    },
+});
+
