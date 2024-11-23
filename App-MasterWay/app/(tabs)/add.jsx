@@ -3,7 +3,7 @@ import { Colors } from '@/constants/Colors';
 import Icon from 'react-native-vector-icons/FontAwesome'; 
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import { setDoc, doc } from 'firebase/firestore';
+import { setDoc, doc, addDoc} from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { Storage, db } from './../../configs/FirebaseConfig'; // Asegúrate de que Firebase esté correctamente importado
 import { Picker } from '@react-native-picker/picker';
@@ -46,6 +46,7 @@ export default function Discover() {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
+      //console.log('image: ',image)
     }
   };
 
@@ -56,24 +57,23 @@ export default function Discover() {
     }));
   };
 
-  const onSubmit = () => {
-    if (!formData.NombreDelLugar || !formData.Ubicación || !selectedCategory || !formData.Calificación || !formData.Descripción || !image) {
-      Alert.alert('Aviso', 'Llena todos los campos');
-      return;
-    }
-    console.log('Form Data:', formData); // Para depuración
-    UploadImage();
-  };
-
   const UploadImage = async () => {
     setLoader(true);
     try {
+      if (!formData.NombreDelLugar || !formData.Ubicación || !selectedCategory || !formData.Calificación || !formData.Descripción || !image) {
+        Alert.alert('Aviso', 'Llena todos los campos');
+        return;
+      }
+      console.log('Form Data:', formData); // Para depuración
+      //console.log('image', image);
       const resp = await fetch(image);  // Obtiene la imagen desde la URI
       const blobImage = await resp.blob();  // Convierte la imagen en un blob para subirla
-      const storageRef = ref(Storage, '/recomendacionImage/' + Date.now() + '.jpg');  // Crea una referencia para la imagen
+      const imageName = '/recomendacionImage/' + Date.now() + '.jpg';
+      const storageRef = ref(Storage, imageName);  // Crea una referencia para la imagen
+      //console.log('StorageRef: ',storageRef);
 
-      await uploadBytes(storageRef, blobImage);
-      const downloadUrl = await getDownloadURL(storageRef);  // Obtiene la URL de la imagen subida
+      const snapshot = await uploadBytes(storageRef, blobImage);
+      const downloadUrl = await getDownloadURL(snapshot.ref);  // Obtiene la URL de la imagen subida
       console.log('Image URL:', downloadUrl);
       SaveFormData(downloadUrl);  // Guarda los datos del formulario junto con la URL de la imagen
     } catch (error) {
@@ -86,7 +86,7 @@ export default function Discover() {
   const SaveFormData = async (imageUrl) => {
     const docId = Date.now().toString();
     try {
-      await setDoc(doc(db, 'recomendaciones', docId), {
+      await setDoc(doc(db, 'recomendaciones ', docId), {
         ...formData,
         imageUrl: imageUrl,  // Incluye la URL de la imagen subida
         id: docId,  // ID único del documento
@@ -200,7 +200,7 @@ export default function Discover() {
             fontFamily: 'popins-bold'
           }}
           disabled={loader}
-          onPress={onSubmit}>
+          onPress={UploadImage}>
           {loader ? (
             <ActivityIndicator size={'large'} />
           ) : (
