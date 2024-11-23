@@ -6,61 +6,56 @@ import { db } from './../../configs/FirebaseConfig';
 import TravelListItem from '../../components/Home/TravelListItem';
 
 export default function Favorites() {
-    const [favIds, setFavIds] = useState([]);
-    const [favRecomendacionesList, setFavRecomendacionesList] = useState([]);
+    const [favRecomendacionesList, setFavRecomendacionesList] = useState([]); // Datos completos de las recomendaciones
     const [loader, setLoader] = useState(false);
+    const userId = "usuarioActual"; // Sustituir por el ID real del usuario autenticado
 
     useEffect(() => {
         GetFavRecomendacionesIds();
     }, []);
 
+    // Paso 1: Obtener los IDs de los favoritos
     const GetFavRecomendacionesIds = async () => {
         setLoader(true);
-        const result = await Shared.GetFavList();
+        const result = await Shared.GetFavList(userId); // Se pasa userId para obtener los IDs de los favoritos
         console.log('Favoritos obtenidos:', result);
-        setFavIds(result || []);
-        setLoader(false);
-
-        GetFavRecomendacionesList(result || []);
+        GetFavRecomendacionesList(result || []); // Llamamos a la función para obtener los detalles completos
     };
 
-    const GetFavRecomendacionesList = async (favId_) => {
-        if (favId_ && favId_.length > 0) {
+    // Paso 2: Obtener las recomendaciones completas basadas en los IDs
+    const GetFavRecomendacionesList = async (favIds) => {
+        if (favIds.length > 0) {
             setLoader(true);
             const chunkSize = 10; // Firestore permite máximo 10 IDs por consulta
             const chunks = [];
-                // Divide el array en chunks de hasta 10 elementos
-            for (let i = 0; i < favId_.length; i += chunkSize) {
-                chunks.push(favId_.slice(i, i + chunkSize));
-            
-                const q = query(collection(db, 'recomendaciones '), where('id', 'in', favId_));
+
+            // Divide el array de IDs en "chunks" de hasta 10 elementos
+            for (let i = 0; i < favIds.length; i += chunkSize) {
+                chunks.push(favIds.slice(i, i + chunkSize));
+            }
+
+            // Aquí hacemos la consulta por cada bloque de IDs
+            for (let chunk of chunks) {
+                const q = query(collection(db, 'recomendaciones'), where('id', 'in', chunk)); // Se filtra por los IDs de las recomendaciones
                 const querySnapshot = await getDocs(q);
 
-                if(!querySnapshot.empty){
-                    const eventData = querySnapshot.docs.map(doc =>({
+                if (!querySnapshot.empty) {
+                    const eventData = querySnapshot.docs.map(doc => ({
                         ...doc.data(),
-                        id: doc.id,
+                        id: doc.id,  // Agregamos el ID del documento
                     }));
-                    setFavRecomendacionesList(eventData);
-                    console.log('recomendaciones:', favRecomendacionesList);
+                    setFavRecomendacionesList(prevData => [...prevData, ...eventData]); // Concatenamos las recomendaciones obtenidas
                 }
             }
-            //querySnapshot.forEach((doc) => {
-            //    recomendaciones.push(doc.data());
-            //});
             setLoader(false);
+        } else {
+            setLoader(false); // Si no hay favoritos, se detiene el loader
         }
     };
 
     return (
-        <View style={{
-            padding: 20,
-            marginTop: 20
-        }}>
-            <Text style={{
-                fontFamily: 'popins-bold',
-                fontSize: 30
-            }}>Favoritos</Text>
+        <View style={{ padding: 20, marginTop: 20 }}>
+            <Text style={{ fontFamily: 'popins-bold', fontSize: 30 }}>Favoritos</Text>
 
             <FlatList
                 onRefresh={GetFavRecomendacionesIds}
@@ -69,7 +64,7 @@ export default function Favorites() {
                 refreshing={loader}
                 renderItem={({ item }) => (
                     <View>
-                        <TravelListItem recomendacion={item} />
+                        <TravelListItem recomendacion={item} /> {/* Renderiza cada recomendación */}
                     </View>
                 )}
                 keyExtractor={(item) => item.id}

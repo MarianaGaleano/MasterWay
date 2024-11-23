@@ -1,17 +1,16 @@
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from './../../configs/FirebaseConfig';
 
-const FAVORITES_DOC_ID = "global_favorites"; // Documento único para todos los favoritos
-
-export const GetFavList = async () => {
+// Obtener lista de favoritos de un usuario específico
+export const GetFavList = async (userId) => {
     try {
-        const docSnap = await getDoc(doc(db, 'favorites', FAVORITES_DOC_ID));
+        const docSnap = await getDoc(doc(db, 'favorites', userId)); // Usa el userId como documento
         if (docSnap?.exists()) {
             const data = docSnap.data();
             return data?.favorites || []; // Retorna el array de favoritos
         } else {
             // Crear un documento vacío si no existe
-            await setDoc(doc(db, 'favorites', FAVORITES_DOC_ID), {
+            await setDoc(doc(db, 'favorites', userId), {
                 favorites: [],
                 createdAt: new Date().toISOString(),
             });
@@ -23,13 +22,14 @@ export const GetFavList = async () => {
     }
 };
 
-export const UpdateFav = async (favorites) => {
+// Actualizar lista de favoritos de un usuario específico
+export const UpdateFav = async (favorites, userId) => {
     if (!Array.isArray(favorites)) {
         console.error("Los favoritos deben ser un array");
         return;
     }
 
-    const docRef = doc(db, 'favorites', FAVORITES_DOC_ID);
+    const docRef = doc(db, 'favorites', userId); // Usa el userId como documento
     try {
         await updateDoc(docRef, { favorites });
     } catch (error) {
@@ -39,5 +39,5 @@ export const UpdateFav = async (favorites) => {
 
 export default {
     GetFavList,
-    UpdateFav
+    UpdateFav
 };
