@@ -60,10 +60,6 @@ export default function Discover() {
   const UploadImage = async () => {
     setLoader(true);
     try {
-      if (!formData.NombreDelLugar || !formData.Ubicación || !selectedCategory || !formData.Calificación || !formData.Descripción || !image) {
-        Alert.alert('Aviso', 'Llena todos los campos');
-        return;
-      }
       console.log('Form Data:', formData); // Para depuración
       //console.log('image', image);
       const resp = await fetch(image);  // Obtiene la imagen desde la URI
