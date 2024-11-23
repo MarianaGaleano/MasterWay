@@ -1,13 +1,28 @@
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Colors } from './../../constants/Colors';
-import { auth } from './../../configs/FirebaseConfig';  
-import { doc, getDoc } from 'firebase/firestore';  
-import { db } from './../../configs/FirebaseConfig';
+import { auth, db } from './../../configs/FirebaseConfig';  
+import { doc, getDoc, collection, addDoc, onSnapshot, Timestamp } from 'firebase/firestore';
 
-export default function Comentarios({ comentarios }) {
+const addCommentToFirebase = async (placeId, user, commentText) => {
+  try {
+    const commentsRef = collection(db, `recomendaciones/${placeId}/comments`);
+    await addDoc(commentsRef, {
+      userId: user.id,
+      userName: user.name,
+      userPhoto: user.photo,
+      comment: commentText,
+      timestamp: Timestamp.now(),
+    });
+    console.log("Comentario agregado correctamente");
+  } catch (error) {
+    console.error("Error al agregar comentario:", error);
+  }
+};
+
+export default function Comentarios({ placeId }) {
   const [newComment, setNewComment] = useState('');
-  const [allComments, setAllComments] = useState(comentarios);
+  const [allComments, setAllComments] = useState([]);
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
@@ -22,26 +37,39 @@ export default function Comentarios({ comentarios }) {
     };
     getUserData();
   }, []);
-  
-  const handleAddComment = () => {
+
+  useEffect(() => {
+    const commentsRef = collection(db, `recomendaciones/${placeId}/comments`);
+    const unsubscribe = onSnapshot(commentsRef, (snapshot) => {
+      const fetchedComments = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setAllComments(fetchedComments);
+    });
+
+    return () => unsubscribe();
+  }, [placeId]);
+
+  const handleAddComment = async () => {
     if (newComment.trim()) {
       const newComentario = {
         id: allComments.length + 1,
-        usuario: 'Tú', 
+        usuario: 'Tú',
         comentario: newComment,
-        avatar: userData?.profilePictureUrl || require('./../../assets/images/logo.png'), // Usa la imagen de perfil o un avatar predeterminado
+        avatar: userData?.profilePictureUrl || require('./../../assets/images/logo.png'),
       };
       setAllComments([...allComments, newComentario]);
       setNewComment('');
+
+      // Agregar comentario a Firebase
+      await addCommentToFirebase(placeId, userData, newComment);
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* Título de Comentarios */}
       <Text style={styles.title}>Comentarios</Text>
-
-      {/* Campo de agregar comentario */}
       <View style={styles.addCommentContainer}>
         <Image 
           source={
@@ -63,8 +91,6 @@ export default function Comentarios({ comentarios }) {
         onPress={handleAddComment} 
         color="#63D2D9"
       />
-
-      {/* Lista de comentarios */}
       <FlatList
         data={allComments}
         keyExtractor={(item) => item.id.toString()}
@@ -78,8 +104,6 @@ export default function Comentarios({ comentarios }) {
           </View>
         )}
       />
-
-      {/* Botón para ver todos los comentarios */}
       <TouchableOpacity style={styles.viewAllButton} onPress={() => alert("Ver todos los comentarios")}>
         <Text style={styles.viewAllText}>Leer todos los comentarios</Text>
       </TouchableOpacity>
@@ -97,7 +121,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: Colors.PRIMARY,
     fontWeight: 'bold',
-    marginBottom: 15, // Espacio debajo del título
+    marginBottom: 15,
   },
   addCommentContainer: {
     flexDirection: 'row',
@@ -120,7 +144,7 @@ const styles = StyleSheet.create({
   commentContainer: {
     padding: 15,
     marginVertical: 5,
-    backgroundColor: '#63D2D9', // Se corrige el color
+    backgroundColor: '#63D2D9',
     borderRadius: 10,
     borderColor: '#ddd',
     borderWidth: 1,
@@ -137,7 +161,7 @@ const styles = StyleSheet.create({
   },
   commentText: {
     fontSize: 14,
-    color: '#fff', // Color del texto del comentario
+    color: '#fff',
     marginTop: 5,
   },
   viewAllButton: {
