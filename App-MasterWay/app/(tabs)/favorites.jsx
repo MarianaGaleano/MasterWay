@@ -17,6 +17,7 @@ export default function Favorites() {
     const GetFavRecomendacionesIds = async () => {
         setLoader(true);
         const result = await Shared.GetFavList();
+        console.log('Favoritos obtenidos:', result);
         setFavIds(result || []);
         setLoader(false);
 
@@ -26,14 +27,27 @@ export default function Favorites() {
     const GetFavRecomendacionesList = async (favId_) => {
         if (favId_ && favId_.length > 0) {
             setLoader(true);
-            const q = query(collection(db, 'recomendaciones'), where('id', 'in', favId_));
-            const querySnapshot = await getDocs(q);
+            const chunkSize = 10; // Firestore permite máximo 10 IDs por consulta
+            const chunks = [];
+                // Divide el array en chunks de hasta 10 elementos
+            for (let i = 0; i < favId_.length; i += chunkSize) {
+                chunks.push(favId_.slice(i, i + chunkSize));
+            
+                const q = query(collection(db, 'recomendaciones '), where('id', 'in', favId_));
+                const querySnapshot = await getDocs(q);
 
-            const recomendaciones = [];
-            querySnapshot.forEach((doc) => {
-                recomendaciones.push(doc.data());
-            });
-            setFavRecomendacionesList(recomendaciones);
+                if(!querySnapshot.empty){
+                    const eventData = querySnapshot.docs.map(doc =>({
+                        ...doc.data(),
+                        id: doc.id,
+                    }));
+                    setFavRecomendacionesList(eventData);
+                    console.log('recomendaciones:', favRecomendacionesList);
+                }
+            }
+            //querySnapshot.forEach((doc) => {
+            //    recomendaciones.push(doc.data());
+            //});
             setLoader(false);
         }
     };
@@ -49,16 +63,17 @@ export default function Favorites() {
             }}>Favoritos</Text>
 
             <FlatList
+                onRefresh={GetFavRecomendacionesIds}
                 data={favRecomendacionesList}
                 numColumns={2}
-                onRefresh={GetFavRecomendacionesIds}
                 refreshing={loader}
                 renderItem={({ item }) => (
                     <View>
                         <TravelListItem recomendacion={item} />
                     </View>
                 )}
+                keyExtractor={(item) => item.id}
             />
         </View>
-    );
+    );
 }
