@@ -7,7 +7,7 @@ import { doc, getDoc, collection, addDoc, onSnapshot, Timestamp } from 'firebase
 // Función para agregar comentarios a Firestore
 const addCommentToFirebase = async (placeId, user, commentText) => {
   try {
-    const commentsRef = collection(db, `recomendaciones/${placeId}/comments`);
+    const commentsRef = collection(db, `recomendaciones /${placeId}/comments`);
     await addDoc(commentsRef, {
       username: user.username, // Cambiado de user.name a user.username
       profileImage: user.profilePictureUrl, // Cambiado de user.photo a user.profilePictureUrl
@@ -29,11 +29,9 @@ export default function Comentarios({ placeId }) {
   useEffect(() => {
     const getUserData = async () => {
       if (auth.currentUser) {
-        console.log("UID del usuario:", auth.currentUser.uid);
         const userDocRef = doc(db, 'users', auth.currentUser.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-          console.log("Datos del usuario cargados:", userDoc.data());
           setUserData(userDoc.data());
         } else {
           console.log("No se encontraron datos para el usuario.");
@@ -43,9 +41,19 @@ export default function Comentarios({ placeId }) {
     getUserData();
   }, []);
 
+  
+    // Verifica que el placeId esté correctamente recibido
+    useEffect(() => {
+      if (!placeId) {
+        console.error("El placeId no se ha recibido correctamente.");
+      }
+    }, [placeId]);
+  
+  
+
   // Escuchar comentarios de Firestore
   useEffect(() => {
-    const commentsRef = collection(db, `recomendaciones/${placeId}/comments`);
+    const commentsRef = collection(db, `recomendaciones /${placeId}/comments`);
     const unsubscribe = onSnapshot(commentsRef, (snapshot) => {
       const fetchedComments = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -71,6 +79,13 @@ export default function Comentarios({ placeId }) {
       console.error("Datos del usuario incompletos:", userData);
       return;
     }
+
+    // Asegúrate de que `placeId` no sea undefined
+  if (!placeId) {
+    alert("ID del lugar no disponible.");
+    console.error("placeId es undefined:", placeId);
+    return;
+  }
 
     try {
       await addCommentToFirebase(placeId, userData, newComment);
