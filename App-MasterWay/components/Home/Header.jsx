@@ -31,11 +31,11 @@ export default function Header() {
       
       <TouchableOpacity onPress={() => navigation.navigate('profile')}>
         <Image 
-          source={
-            userData?.profilePictureUrl
-              ? { uri: userData.profilePictureUrl }
-              : require('./../../assets/images/logo.png')
-          } 
+            source={
+              userData?.profilePictureUrl
+                ? { uri: userData.profilePictureUrl }
+                : require('./../../assets/images/logo.png')
+            } 
           style={styles.profileImage} 
         />
       </TouchableOpacity>
