@@ -4,15 +4,15 @@ import { Colors } from './../../constants/Colors';
 import { auth, db } from './../../configs/FirebaseConfig';  
 import { doc, getDoc, collection, addDoc, onSnapshot, Timestamp } from 'firebase/firestore';
 
+// Función para agregar comentarios a Firestore
 const addCommentToFirebase = async (placeId, user, commentText) => {
   try {
     const commentsRef = collection(db, `recomendaciones/${placeId}/comments`);
     await addDoc(commentsRef, {
-      userId: user.id,
-      userName: user.name,
-      userPhoto: user.photo,
-      comment: commentText,
-      timestamp: Timestamp.now(),
+      username: user.username, // Cambiado de user.name a user.username
+      profileImage: user.profilePictureUrl, // Cambiado de user.photo a user.profilePictureUrl
+      commentText,
+      createdAt: Timestamp.now(),
     });
     console.log("Comentario agregado correctamente");
   } catch (error) {
@@ -25,25 +25,34 @@ export default function Comentarios({ placeId }) {
   const [allComments, setAllComments] = useState([]);
   const [userData, setUserData] = useState(null);
 
+  // Obtener datos del usuario actual
   useEffect(() => {
     const getUserData = async () => {
       if (auth.currentUser) {
+        console.log("UID del usuario:", auth.currentUser.uid);
         const userDocRef = doc(db, 'users', auth.currentUser.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
+          console.log("Datos del usuario cargados:", userDoc.data());
           setUserData(userDoc.data());
+        } else {
+          console.log("No se encontraron datos para el usuario.");
         }
       }
     };
     getUserData();
   }, []);
 
+  // Escuchar comentarios de Firestore
   useEffect(() => {
     const commentsRef = collection(db, `recomendaciones/${placeId}/comments`);
     const unsubscribe = onSnapshot(commentsRef, (snapshot) => {
       const fetchedComments = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data(),
+        username: doc.data().username,
+        profileImage: doc.data().profileImage,
+        commentText: doc.data().commentText,
+        createdAt: doc.data().createdAt?.toDate(),
       }));
       setAllComments(fetchedComments);
     });
@@ -52,18 +61,22 @@ export default function Comentarios({ placeId }) {
   }, [placeId]);
 
   const handleAddComment = async () => {
-    if (newComment.trim()) {
-      const newComentario = {
-        id: allComments.length + 1,
-        usuario: 'Tú',
-        comentario: newComment,
-        avatar: userData?.profilePictureUrl || require('./../../assets/images/logo.png'),
-      };
-      setAllComments([...allComments, newComentario]);
-      setNewComment('');
+    if (!newComment.trim()) {
+      alert("El comentario no puede estar vacío.");
+      return;
+    }
 
-      // Agregar comentario a Firebase
+    if (!userData || !userData.username || !userData.profilePictureUrl) {
+      alert("No se han cargado los datos del usuario.");
+      console.error("Datos del usuario incompletos:", userData);
+      return;
+    }
+
+    try {
       await addCommentToFirebase(placeId, userData, newComment);
+      setNewComment('');
+    } catch (error) {
+      console.error("Error al agregar comentario:", error);
     }
   };
 
@@ -97,10 +110,11 @@ export default function Comentarios({ placeId }) {
         renderItem={({ item }) => (
           <View style={styles.commentContainer}>
             <View style={styles.commentHeader}>
-              <Image source={{ uri: item.avatar }} style={styles.avatar} />
-              <Text style={styles.commentUser}>{item.usuario.toUpperCase()}</Text>
+              <Image source={{ uri: item.profileImage }} style={styles.avatar} />
+              <Text style={styles.commentUser}>{item.username.toUpperCase()}</Text>
             </View>
-            <Text style={styles.commentText}>{item.comentario}</Text>
+            <Text style={styles.commentText}>{item.commentText}</Text>
+            <Text style={styles.commentDate}>{item.createdAt?.toLocaleString()}</Text>
           </View>
         )}
       />
@@ -162,6 +176,11 @@ const styles = StyleSheet.create({
   commentText: {
     fontSize: 14,
     color: '#fff',
+    marginTop: 5,
+  },
+  commentDate: {
+    fontSize: 12,
+    color: '#ddd',
     marginTop: 5,
   },
   viewAllButton: {
