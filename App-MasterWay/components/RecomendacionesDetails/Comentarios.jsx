@@ -1,16 +1,17 @@
-import { View, Text, TextInput, Button, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Colors } from './../../constants/Colors';
 import { auth, db } from './../../configs/FirebaseConfig';  
 import { doc, getDoc, collection, addDoc, onSnapshot, Timestamp } from 'firebase/firestore';
+import { Ionicons } from '@expo/vector-icons'; 
 
 // Función para agregar comentarios a Firestore
 const addCommentToFirebase = async (placeId, user, commentText) => {
   try {
     const commentsRef = collection(db, `recomendaciones /${placeId}/comments`);
     await addDoc(commentsRef, {
-      username: user.username, // Cambiado de user.name a user.username
-      profileImage: user.profilePictureUrl, // Cambiado de user.photo a user.profilePictureUrl
+      username: user.username, 
+      profileImage: user.profilePictureUrl,
       commentText,
       createdAt: Timestamp.now(),
     });
@@ -25,6 +26,7 @@ export default function Comentarios({ placeId }) {
   const [allComments, setAllComments] = useState([]);
   const [userData, setUserData] = useState(null);
   const [showAllComments, setShowAllComments] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   // Obtener datos del usuario actual
   useEffect(() => {
@@ -111,12 +113,14 @@ export default function Comentarios({ placeId }) {
           value={newComment} 
           onChangeText={setNewComment} 
         />
+        <TouchableOpacity 
+          style={styles.commentButton}
+          onPress={handleAddComment}
+        >
+          <Ionicons name="send" size={24} color="white" />
+        </TouchableOpacity>
       </View>
-      <Button 
-        title="Comentar" 
-        onPress={handleAddComment} 
-        color="#63D2D9"
-      />
+
       <FlatList
         data={showAllComments ? allComments : allComments.slice(0, 3)}
         keyExtractor={(item) => item.id.toString()}
@@ -124,15 +128,22 @@ export default function Comentarios({ placeId }) {
           <View style={styles.commentContainer}>
             <View style={styles.commentHeader}>
               <Image source={{ uri: item.profileImage }} style={styles.avatar} />
-              <Text style={styles.commentUser}>{item.username.toUpperCase()}</Text>
+              <View style={styles.textContainer}>
+                <Text style={styles.commentUser}>{item.username.toUpperCase()}</Text>
+                <Text style={styles.commentText}>{item.commentText}</Text>
+                <Text style={styles.commentDate}>{item.createdAt?.toLocaleString()}</Text>
+              </View>
             </View>
-            <Text style={styles.commentText}>{item.commentText}</Text>
-            <Text style={styles.commentDate}>{item.createdAt?.toLocaleString()}</Text>
           </View>
         )}
       />
       {allComments.length > 3 && (
-        <TouchableOpacity style={styles.viewAllButton} onPress={() => setShowAllComments(!showAllComments)}>
+        <TouchableOpacity 
+          style={styles.viewAllButton} 
+          onPress={() => setShowAllComments(!showAllComments)}
+          onPressIn={() => setIsHovered(true)}
+          onPressOut={() => setIsHovered(false)}
+        >
           <Text style={styles.viewAllText}>{showAllComments ? "Ver menos comentarios" : "Leer todos los comentarios"}</Text>
         </TouchableOpacity>
       )}
@@ -158,8 +169,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   avatar: {
-    width: 40,
-    height: 40,
+    width: 50,
+    height: 50,
     borderRadius: 20,
     marginRight: 10,
   },
@@ -170,44 +181,66 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
   },
+  commentButton: {
+    marginLeft: 10,
+    padding: 10,
+    backgroundColor: Colors.PRINCIPAL,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   commentContainer: {
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
+    borderRadius: 15,
     padding: 15,
-    marginVertical: 5,
-    backgroundColor: '#63D2D9',
-    borderRadius: 10,
-    borderColor: '#ddd',
-    borderWidth: 1,
+    backgroundColor: Colors.PRINCIPAL,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    marginVertical: 10,
   },
   commentHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 5,
   },
+  textContainer: {
+    flexShrink: 1, // Hace que el texto se ajuste al espacio disponible
+  },
   commentUser: {
+    fontSize: 15,
     fontWeight: 'bold',
-    fontSize: 14,
     marginRight: 10,
+    color: Colors.BLACK,
   },
   commentText: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#fff',
     marginTop: 5,
   },
   commentDate: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#ddd',
     marginTop: 5,
   },
   viewAllButton: {
-    alignSelf: 'center',
-    marginTop: 10,
-    padding: 10,
-    borderColor: '#63D2D9',
+    marginTop: 8, 
+    backgroundColor: Colors.WHITE, 
+    paddingVertical: 15, 
+    borderRadius: 25, 
+    alignItems: 'center',
+    borderColor: Colors.BLACK,
     borderWidth: 1,
-    borderRadius: 5,
   },
   viewAllText: {
-    color: '#63D2D9',
-    fontWeight: 'bold',
+    color: Colors.BLACK, 
+    textAlign: 'center', 
+    fontFamily: 'popins-bold',
   },
 });
