@@ -23,6 +23,8 @@ export default function Add_Event() {
   const user = auth.currentUser;
   const queryParams = useLocalSearchParams();
   
+  const isSelectEvent = queryParams?.isSelectEvent === 'true';
+  const nameEventFav = queryParams.setNameEvent || '';
   const isEditing = queryParams.isEditing === 'true'; // Asegúrate de convertir a booleano
   const eventToEdit = queryParams.eventToEdit;
   const parsedEvent = eventToEdit ? JSON.parse(decodeURIComponent(eventToEdit)) : null;
@@ -38,7 +40,7 @@ export default function Add_Event() {
   const [startSelectedTime, startsetSelectedTime] = useState(dayjs(new Date()));
   const [finalSelectedTime, finalsetSelectedTime] = useState(dayjs(new Date()));
   const [isToggled, setIsToggled] = useState(false);
-  const [nameEvent] = useState('');
+  const [nameEvent, setNameEvent] = useState('');
   const [description] = useState('');
   
 
@@ -54,6 +56,10 @@ export default function Add_Event() {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   useEffect(() => {
+    if (isSelectEvent) {
+      setNameEvent(nameEventFav); // Pre-rellena el nombre del evento si se recibió
+    }
+
     if (isEditing && parsedEvent && !isDataLoaded) {
       setnewEvent({
         nameEvent: parsedEvent.nameEvent || '',
@@ -65,7 +71,7 @@ export default function Add_Event() {
       });
     }
       setIsDataLoaded(true);
-  }, [isEditing, parsedEvent, isDataLoaded]); // Se agrega dependencia de parsedEvent
+  }, [isEditing, parsedEvent, isDataLoaded, router.params?.selectedName]); // Se agrega dependencia de parsedEvent
   
   
   if (!isDataLoaded) {
@@ -112,13 +118,11 @@ export default function Add_Event() {
     };
     
   //constantes que van a cambiar el estado de los campos;
-  const handleNameChange = (text) => {
-    setnewEvent((prevEvent) => ({
-      ...prevEvent, //prevEventcopia todas las propiedades del estado anterior
-                    //al nuevo objeto
-      nameEvent: text,
-    }));
+  const handleEventNameClick = () => {
+    router.push(`../../(tabs)/favorites?isSelectEvent=true&setNameEvent=${nameEvent}`); // Navegar a Favoritos y pasar la función
+    console.log("setNameEvent: ", nameEvent);
   };
+
   
   const handleDescriptionChange = (text) => {
     setnewEvent((prevEvent) => ({
@@ -157,9 +161,11 @@ export default function Add_Event() {
 
   const toggleSwitch = () => {
     setIsToggled(!isToggled);
-    if (isToggled) {
+    console.log('isToggled',isToggled);
+    if (isToggled == false) {
       startsetSelectedTime(dayjs().hour(0).minute(0)); // cambiar a 12:00am
       finalsetSelectedTime(dayjs().hour(23).minute(59)); // cambiar a 11:59pm
+      console.log('hora inicio', startSelectedTime);
     }
   };
 
@@ -169,11 +175,14 @@ export default function Add_Event() {
 
           <View style={styles.form}>
             <View style={styles.infoText}>
+              <TouchableOpacity onPress={handleEventNameClick}>
               <TextInput
               placeholder='Seleccionar evento'
               value ={newEvent.nameEvent}
-              onChangeText={handleNameChange}
+              onChangeText={setNameEvent}
+              editable={false}
               />
+              </TouchableOpacity>
             </View>
           </View>
 

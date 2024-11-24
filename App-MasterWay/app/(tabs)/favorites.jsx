@@ -1,9 +1,10 @@
 import { View, Text, FlatList, ActivityIndicator, ScrollView } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Shared from '../../components/RecomendacionesDetails/Shared';
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from './../../configs/FirebaseConfig';
 import TravelListItem from '../../components/Home/TravelListItem';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function Favorites() {
     const [favIds, setFavIds] = useState([]);
@@ -24,8 +25,8 @@ export default function Favorites() {
     };
 
     const GetFavRecomendacionesList = async (favId_) => {
+        setLoader(true);
         if (favId_ && favId_.length > 0) {
-            setLoader(true);
             const chunkSize = 10; // Firestore permite máximo 10 IDs por consulta
             const chunks = [];
             
@@ -36,7 +37,7 @@ export default function Favorites() {
 
             const recomendacionList = [];
             for (let i = 0; i < chunks.length; i++) {
-                const q = query(collection(db, 'recomendaciones'), where('id', 'in', chunks[i]));
+                const q = query(collection(db, 'recomendaciones '), where('id', 'in', chunks[i]));
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
@@ -48,9 +49,16 @@ export default function Favorites() {
                 }
             }
             setFavRecomendacionesList(recomendacionList);
-            setLoader(false);
+            console.log('lista recomendaciones:', recomendacionList)
         }
+        setLoader(false);
     };
+
+    useFocusEffect(
+        useCallback(() => {
+            GetFavRecomendacionesIds();
+        }, [])
+    );
 
     const containerStyle = {
         padding: 20,
