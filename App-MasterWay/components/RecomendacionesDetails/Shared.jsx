@@ -1,17 +1,21 @@
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { auth } from './../../configs/FirebaseConfig'; // Asegúrate de tener acceso al usuario autenticado
 import { db } from './../../configs/FirebaseConfig';
-
-const FAVORITES_DOC_ID = "global_favorites"; // Documento único para todos los favoritos
 
 export const GetFavList = async () => {
     try {
-        const docSnap = await getDoc(doc(db, 'favorites', FAVORITES_DOC_ID));
+        const user = auth.currentUser;
+        if (!user) throw new Error("Usuario no autenticado.");
+
+        const docRef = doc(db, 'favorites', user.uid);
+        const docSnap = await getDoc(docRef);
+
         if (docSnap?.exists()) {
             const data = docSnap.data();
             return data?.favorites || []; // Retorna el array de favoritos
         } else {
             // Crear un documento vacío si no existe
-            await setDoc(doc(db, 'favorites', FAVORITES_DOC_ID), {
+            await setDoc(docRef, {
                 favorites: [],
                 createdAt: new Date().toISOString(),
             });
@@ -29,8 +33,11 @@ export const UpdateFav = async (favorites) => {
         return;
     }
 
-    const docRef = doc(db, 'favorites', FAVORITES_DOC_ID);
     try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("Usuario no autenticado.");
+
+        const docRef = doc(db, 'favorites', user.uid);
         await updateDoc(docRef, { favorites });
     } catch (error) {
         console.error("Error al actualizar la lista de favoritos:", error);
@@ -39,5 +46,5 @@ export const UpdateFav = async (favorites) => {
 
 export default {
     GetFavList,
-    UpdateFav
+    UpdateFav
 };

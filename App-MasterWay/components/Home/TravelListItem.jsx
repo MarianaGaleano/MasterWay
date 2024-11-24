@@ -62,6 +62,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         borderRadius: 10,
         backgroundColor: Colors.PRINCIPAL,
-        fontSize: 11,
-    },
+        fontSize: 11,
+    },
 });

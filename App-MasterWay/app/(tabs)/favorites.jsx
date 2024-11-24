@@ -1,4 +1,4 @@
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Shared from '../../components/RecomendacionesDetails/Shared';
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -36,7 +36,7 @@ export default function Favorites() {
 
             const recomendacionList = [];
             for (let i = 0; i < chunks.length; i++) {
-                const q = query(collection(db, 'recomendaciones '), where('id', 'in', chunks[i]));
+                const q = query(collection(db, 'recomendaciones'), where('id', 'in', chunks[i]));
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
@@ -52,9 +52,29 @@ export default function Favorites() {
         }
     };
 
+    const containerStyle = {
+        padding: 20,
+        marginTop: 20,
+    };
+
+    const headerStyle = {
+        fontFamily: 'popins-bold',
+        fontSize: 30,
+    };
+
+    const itemContainerStyle = {
+        flex: 1,
+        margin: 5,
+    };
+
+    const columnWrapperStyle = {
+        justifyContent: 'space-between',
+        marginBottom: 10,
+    };
+
     return (
-        <ScrollView style={styles.container}>
-            <Text style={styles.header}>Favoritos</Text>
+        <ScrollView style={containerStyle}>
+            <Text style={headerStyle}>Favoritos</Text>
             {loader ? (
                 <ActivityIndicator size="large" color="#0000ff" />
             ) : (
@@ -64,34 +84,14 @@ export default function Favorites() {
                     numColumns={2} // Muestra en 2 columnas
                     refreshing={loader}
                     renderItem={({ item }) => (
-                        <View style={styles.itemContainer}>
+                        <View style={itemContainerStyle}>
                             <TravelListItem recomendacion={item} />
                         </View>
                     )}
                     keyExtractor={(item) => item.id}
-                    columnWrapperStyle={styles.columnWrapper}
+                    columnWrapperStyle={columnWrapperStyle}
                 />
             )}
         </ScrollView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-        marginTop: 20,
-    },
-    header: {
-        fontFamily: 'popins-bold',
-        fontSize: 30,
-    },
-    itemContainer: {
-        flex: 1, 
-        margin: 0.1,  // Añade un margen alrededor de cada item
-    },
-    columnWrapper: {
-        justifyContent: 'space-between', // Espacio entre columnas
-        marginBottom: 10, // Espacio debajo de cada fila
-    },
-});
-

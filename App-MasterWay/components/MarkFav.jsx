@@ -57,5 +57,5 @@ export default function MarkFav({ recomendacion }) {
                 </Pressable>
             )}
         </View>
-    );
+    );
 }
