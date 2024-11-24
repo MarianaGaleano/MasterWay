@@ -24,6 +24,7 @@ export default function Comentarios({ placeId }) {
   const [newComment, setNewComment] = useState('');
   const [allComments, setAllComments] = useState([]);
   const [userData, setUserData] = useState(null);
+  const [showAllComments, setShowAllComments] = useState(false);
 
   // Obtener datos del usuario actual
   useEffect(() => {
@@ -41,15 +42,12 @@ export default function Comentarios({ placeId }) {
     getUserData();
   }, []);
 
-  
-    // Verifica que el placeId esté correctamente recibido
-    useEffect(() => {
-      if (!placeId) {
-        console.error("El placeId no se ha recibido correctamente.");
-      }
-    }, [placeId]);
-  
-  
+  // Verifica que el placeId esté correctamente recibido
+  useEffect(() => {
+    if (!placeId) {
+      console.error("El placeId no se ha recibido correctamente.");
+    }
+  }, [placeId]);
 
   // Escuchar comentarios de Firestore
   useEffect(() => {
@@ -81,11 +79,11 @@ export default function Comentarios({ placeId }) {
     }
 
     // Asegúrate de que `placeId` no sea undefined
-  if (!placeId) {
-    alert("ID del lugar no disponible.");
-    console.error("placeId es undefined:", placeId);
-    return;
-  }
+    if (!placeId) {
+      alert("ID del lugar no disponible.");
+      console.error("placeId es undefined:", placeId);
+      return;
+    }
 
     try {
       await addCommentToFirebase(placeId, userData, newComment);
@@ -120,7 +118,7 @@ export default function Comentarios({ placeId }) {
         color="#63D2D9"
       />
       <FlatList
-        data={allComments}
+        data={showAllComments ? allComments : allComments.slice(0, 3)}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.commentContainer}>
@@ -133,9 +131,11 @@ export default function Comentarios({ placeId }) {
           </View>
         )}
       />
-      <TouchableOpacity style={styles.viewAllButton} onPress={() => alert("Ver todos los comentarios")}>
-        <Text style={styles.viewAllText}>Leer todos los comentarios</Text>
-      </TouchableOpacity>
+      {allComments.length > 3 && (
+        <TouchableOpacity style={styles.viewAllButton} onPress={() => setShowAllComments(!showAllComments)}>
+          <Text style={styles.viewAllText}>{showAllComments ? "Ver menos comentarios" : "Leer todos los comentarios"}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
