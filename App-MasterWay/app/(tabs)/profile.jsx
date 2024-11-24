@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker'; // Importar ImagePicker
 import { Colors } from '@/constants/Colors';
 import { signOut } from 'firebase/auth';
@@ -85,157 +85,162 @@ export default function Profile() {
       alert("Hubo un error al subir la imagen. Intenta nuevamente.");
     }
   };
-  
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Perfil de Usuario</Text>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Perfil de Usuario</Text>
 
-      {/* Imagen de perfil */}
-      {userData && (
-        <TouchableOpacity onPress={handleImagePick} style={styles.profileSection}>
-          <Image
-            source={userData.profilePictureUrl ? { uri: userData.profilePictureUrl } : require('./../../assets/images/logo.png')}
-            style={styles.avatar}
-          />
-          <Text style={styles.editButton}>Cambiar foto de perfil</Text>
+        {/* Imagen de perfil */}
+        {userData && (
+          <TouchableOpacity onPress={handleImagePick} style={styles.profileSection}>
+            <Image
+              source={userData.profilePictureUrl ? { uri: userData.profilePictureUrl } : require('./../../assets/images/logo.png')}
+              style={styles.avatar}
+            />
+            <Text style={styles.editButton}>Cambiar foto de perfil</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Información del usuario */}
+        {userData && (
+          <>
+            <View style={styles.infoSection}>
+              <Text style={styles.label}>Nombre de Usuario</Text>
+              {editingField === 'username' ? (
+                <View style={styles.infoRow}>
+                  <TextInput
+                    style={styles.input}
+                    value={editedData.username}
+                    onChangeText={(text) => setEditedData({ ...editedData, username: text })}
+                  />
+                  <TouchableOpacity onPress={() => handleSave('username')}>
+                    <Text style={styles.editButton}>Guardar</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoText}>@{userData.username}</Text>
+                  <TouchableOpacity onPress={() => setEditingField('username')}>
+                    <Text style={styles.editButton}>Editar</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.infoSection}>
+              <Text style={styles.label}>Nombre Completo</Text>
+              {editingField === 'fullName' ? (
+                <View style={styles.infoRow}>
+                  <TextInput
+                    style={styles.input}
+                    value={editedData.fullName}
+                    onChangeText={(text) => setEditedData({ ...editedData, fullName: text })}
+                  />
+                  <TouchableOpacity onPress={() => handleSave('fullName')}>
+                    <Text style={styles.editButton}>Guardar</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoText}>{userData.fullName}</Text>
+                  <TouchableOpacity onPress={() => setEditingField('fullName')}>
+                    <Text style={styles.editButton}>Editar</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.infoSection}>
+              <Text style={styles.label}>Email</Text>
+              {editingField === 'email' ? (
+                <View style={styles.infoRow}>
+                  <TextInput
+                    style={styles.input}
+                    value={editedData.email}
+                    onChangeText={(text) => setEditedData({ ...editedData, email: text })}
+                  />
+                  <TouchableOpacity onPress={() => handleSave('email')}>
+                    <Text style={styles.editButton}>Guardar</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoText}>{userData.email}</Text>
+                  <TouchableOpacity onPress={() => setEditingField('email')}>
+                    <Text style={styles.editButton}>Editar</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.infoSection}>
+              <Text style={styles.label}>Teléfono</Text>
+              {editingField === 'phoneNumber' ? (
+                <View style={styles.infoRow}>
+                  <TextInput
+                    style={styles.input}
+                    value={editedData.phoneNumber}
+                    onChangeText={(text) => setEditedData({ ...editedData, phoneNumber: text })}
+                  />
+                  <TouchableOpacity onPress={() => handleSave('phoneNumber')}>
+                    <Text style={styles.editButton}>Guardar</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoText}>+57 {userData.phoneNumber}</Text>
+                  <TouchableOpacity onPress={() => setEditingField('phoneNumber')}>
+                    <Text style={styles.editButton}>Editar</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.infoSection}>
+              <Text style={styles.label}>Descripción</Text>
+              {editingField === 'description' ? (
+                <View style={styles.infoRow}>
+                  <TextInput
+                    style={styles.input}
+                    value={editedData.description}
+                    onChangeText={(text) => setEditedData({ ...editedData, description: text })}
+                  />
+                  <TouchableOpacity onPress={() => handleSave('description')}>
+                    <Text style={styles.editButton}>Guardar</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.infoRow}>
+                  <Text style={[styles.infoText, styles.gray]}>
+                    {userData.description || 'Breve descripción sobre ti...'}
+                  </Text>
+                  <TouchableOpacity onPress={() => setEditingField('description')}>
+                    <Text style={styles.editButton}>Editar</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </>
+        )}
+
+        {/* Botón de cerrar sesión */}
+        <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
+          <Text style={styles.signOutButtonText}>Cerrar Sesión</Text>
         </TouchableOpacity>
-      )}
-
-      {/* Información del usuario */}
-      {userData && (
-        <>
-          <View style={styles.infoSection}>
-            <Text style={styles.label}>Nombre de Usuario</Text>
-            {editingField === 'username' ? (
-              <View style={styles.infoRow}>
-                <TextInput
-                  style={styles.input}
-                  value={editedData.username}
-                  onChangeText={(text) => setEditedData({ ...editedData, username: text })}
-                />
-                <TouchableOpacity onPress={() => handleSave('username')}>
-                  <Text style={styles.editButton}>Guardar</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.infoRow}>
-                <Text style={styles.infoText}>@{userData.username}</Text>
-                <TouchableOpacity onPress={() => setEditingField('username')}>
-                  <Text style={styles.editButton}>Editar</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-
-          <View style={styles.infoSection}>
-            <Text style={styles.label}>Nombre Completo</Text>
-            {editingField === 'fullName' ? (
-              <View style={styles.infoRow}>
-                <TextInput
-                  style={styles.input}
-                  value={editedData.fullName}
-                  onChangeText={(text) => setEditedData({ ...editedData, fullName: text })}
-                />
-                <TouchableOpacity onPress={() => handleSave('fullName')}>
-                  <Text style={styles.editButton}>Guardar</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.infoRow}>
-                <Text style={styles.infoText}>{userData.fullName}</Text>
-                <TouchableOpacity onPress={() => setEditingField('fullName')}>
-                  <Text style={styles.editButton}>Editar</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-
-          <View style={styles.infoSection}>
-            <Text style={styles.label}>Email</Text>
-            {editingField === 'email' ? (
-              <View style={styles.infoRow}>
-                <TextInput
-                  style={styles.input}
-                  value={editedData.email}
-                  onChangeText={(text) => setEditedData({ ...editedData, email: text })}
-                />
-                <TouchableOpacity onPress={() => handleSave('email')}>
-                  <Text style={styles.editButton}>Guardar</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.infoRow}>
-                <Text style={styles.infoText}>{userData.email}</Text>
-                <TouchableOpacity onPress={() => setEditingField('email')}>
-                  <Text style={styles.editButton}>Editar</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-
-          <View style={styles.infoSection}>
-            <Text style={styles.label}>Teléfono</Text>
-            {editingField === 'phoneNumber' ? (
-              <View style={styles.infoRow}>
-                <TextInput
-                  style={styles.input}
-                  value={editedData.phoneNumber}
-                  onChangeText={(text) => setEditedData({ ...editedData, phoneNumber: text })}
-                />
-                <TouchableOpacity onPress={() => handleSave('phoneNumber')}>
-                  <Text style={styles.editButton}>Guardar</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.infoRow}>
-                <Text style={styles.infoText}>+57 {userData.phoneNumber}</Text>
-                <TouchableOpacity onPress={() => setEditingField('phoneNumber')}>
-                  <Text style={styles.editButton}>Editar</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-
-          <View style={styles.infoSection}>
-            <Text style={styles.label}>Descripción</Text>
-            {editingField === 'description' ? (
-              <View style={styles.infoRow}>
-                <TextInput
-                  style={styles.input}
-                  value={editedData.description}
-                  onChangeText={(text) => setEditedData({ ...editedData, description: text })}
-                />
-                <TouchableOpacity onPress={() => handleSave('description')}>
-                  <Text style={styles.editButton}>Guardar</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.infoRow}>
-                <Text style={[styles.infoText, styles.gray]}>
-                  {userData.description || 'Breve descripción sobre ti...'}
-                </Text>
-                <TouchableOpacity onPress={() => setEditingField('description')}>
-                  <Text style={styles.editButton}>Editar</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        </>
-      )}
-
-      {/* Botón de cerrar sesión */}
-      <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
-        <Text style={styles.signOutButtonText}>Cerrar Sesión</Text>
-      </TouchableOpacity>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 50,
+  },
   container: {
-    padding: 20,
+    padding: 25,
     marginTop: 20,
+    height: '115%',
   },
   title: {
     fontFamily: 'popins-bold',
