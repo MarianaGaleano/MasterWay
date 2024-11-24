@@ -28,7 +28,7 @@ export default function RecomendacionInfo({ recomendacion }) {
     <View>
       {/* Imagen de la recomendación */}
       <Image 
-        source={{ uri: recomendacion?.imageUrl }}
+        source={{ uri: recomendacion?.imageUrl}}
         style={{
           width: '100%',
           height: 400,
@@ -144,5 +144,5 @@ const styles = StyleSheet.create({
   descripcion: {
     fontSize: 16,
     color: Colors.BLACK,
-  },
+  },
 });

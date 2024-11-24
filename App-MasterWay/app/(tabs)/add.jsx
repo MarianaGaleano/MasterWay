@@ -16,7 +16,7 @@ const profileImage = 'https://via.placeholder.com/40';
 export default function Discover() {
 
   const router = useRouter();
-  const [formData, setFormData] = useState({ category: 'Hoteles' });
+  const [formData, setFormData] = useState({ Category: 'Hoteles' });
   const [categoryList, setCategoryList] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(''); // Cambié el valor inicial a una cadena vacía
   const [image, setImage] = useState(null);

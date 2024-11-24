@@ -18,7 +18,7 @@ export default function RecomendacionesDetails() {
 
     // Función para regresar a la pantalla anterior
     const handleBackPress = () => {
-        navigation.navigate('home'); // Reemplaza 'Home' con el nombre de la pantalla a la que quieres regresar
+        navigation.navigate('home'); 
     };
 
     return (
@@ -28,8 +28,8 @@ export default function RecomendacionesDetails() {
                 onPress={handleBackPress}
                 style={{
                     position: 'absolute',
-                    top: 40, // Ajusta la posición en Y según tus necesidades
-                    left: 20, // Ajusta la posición en X según tus necesidades
+                    top: 40, 
+                    left: 20, 
                     zIndex: 10
                 }}
             >
