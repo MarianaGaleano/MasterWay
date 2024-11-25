@@ -32,7 +32,7 @@ export default function Add_Event() {
   const parsedEvent = eventToEdit ? JSON.parse(decodeURIComponent(eventToEdit)) : null;
   const eventId = parsedEvent?.id;
   const eventParamId = paramEventConv?.id;
-  console.log('eventId',eventId)
+  console.log('eventParamId',eventParamId);
 
   //console.log(useLocalSearchParams());
   //console.log("isEditing:", isEditing);
@@ -90,6 +90,7 @@ export default function Add_Event() {
 
   const UpdateEvent = async()=>{
     setIsLoader(true);
+    console.log('isEditing',isEditing)
     try{
     if (!newEvent.nameEvent || !newEvent.description || !newEvent.startSelectedDate || !newEvent.finalSelectedDate) {
       alert("por favor llena todos los campos");
@@ -110,17 +111,25 @@ export default function Add_Event() {
     finalSelectedTime: formattedEndTime,
     };
 
+    // Actualizar evento si `isEditing` es verdadero y hay un ID
     if (isEditing) {
-      // Actualizar evento existente
-      const eventRef = doc(db, 'events', eventParamId);
-      await setDoc(eventRef, eventToSave, { merge: true }); // Actualización parcial
-    }
-    else {
-      const eventRef = collection(db, "events");
-      await addDoc(eventRef, eventToSave);
+      const idToUpdate = eventId || eventParamId; // Prioriza `eventId` y luego `eventParamId`
+      if (!idToUpdate) {
+        alert("No se encontró un ID válido para actualizar el evento.");
+        return;
+      }
+
+      // Referencia al documento de Firestore
+      const eventRef = doc(db, 'events', idToUpdate);
+      await setDoc(eventRef, eventToSave, { merge: true }); // Actualiza parcialmente el documento
+      alert('Evento actualizado con éxito');
+    } else {
+      // Crear un evento nuevo si no estamos en modo edición
+      const eventRef = collection(db, 'events');
+      await addDoc(eventRef, eventToSave); // Crea un nuevo documento
+      alert('Evento guardado con éxito');
     }
 
-    alert(isEditing === 'true' ? 'Evento actualizado con éxito' : 'Evento guardado con éxito');
     router.replace('../../calendar');
   } catch (error) {
     console.error('Error al guardar el evento:', error);
