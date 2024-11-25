@@ -21,9 +21,15 @@ export default function Discover() {
   const [selectedCategory, setSelectedCategory] = useState(''); // Cambié el valor inicial a una cadena vacía
   const [image, setImage] = useState(null);
   const [loader, setLoader] = useState(false);
+  const [userData, setUserData] = useState(null); // Suponiendo que el usuario se almacena aquí
 
   useEffect(() => {
     GetCategories();
+    // Simulamos la carga de los datos del usuario
+    setUserData({
+      username: 'usuarioEjemplo', // Aquí deberías cargar los datos reales
+      profilePictureUrl: 'https://via.placeholder.com/40'
+    });
   }, []);
 
   const GetCategories = async () => {
@@ -46,7 +52,6 @@ export default function Discover() {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
-      //console.log('image: ',image)
     }
   };
 
@@ -57,16 +62,39 @@ export default function Discover() {
     }));
   };
 
+  const validateForm = () => {
+    // Verifica si los campos del formulario están vacíos
+    const requiredFields = ['NombreDelLugar', 'Ubicación', 'Category', 'Calificación', 'Descripción'];
+    for (let field of requiredFields) {
+      if (!formData[field]) {
+        Alert.alert('Error', `El campo ${field} no puede estar vacío.`);
+        return false;
+      }
+    }
+
+    if (!image) {
+      Alert.alert('Error', 'Debes subir una foto.');
+      return false;
+    }
+
+    // Verifica si los datos del usuario están completos
+    if (!userData || !userData.username || !userData.profilePictureUrl) {
+      Alert.alert('Error', 'No se han cargado los datos del usuario.');
+      console.error('Datos del usuario incompletos:', userData);
+      return false;
+    }
+
+    return true;
+  };
+
   const UploadImage = async () => {
     setLoader(true);
     try {
-      console.log('Form Data:', formData); // Para depuración
-      //console.log('image', image);
+      console.log('Form Data:', formData);
       const resp = await fetch(image);  // Obtiene la imagen desde la URI
       const blobImage = await resp.blob();  // Convierte la imagen en un blob para subirla
       const imageName = '/recomendacionImage/' + Date.now() + '.jpg';
       const storageRef = ref(Storage, imageName);  // Crea una referencia para la imagen
-      //console.log('StorageRef: ',storageRef);
 
       const snapshot = await uploadBytes(storageRef, blobImage);
       const downloadUrl = await getDownloadURL(snapshot.ref);  // Obtiene la URL de la imagen subida
@@ -170,7 +198,7 @@ export default function Discover() {
         </View>
 
         <View>
-          <Text style={styles.inputContainer}>Subir fotos</Text>
+          <Text style={styles.inputContainer}>Subir foto</Text>
           <TouchableOpacity onPress={imagePicker}>
             {!image ? (
               <Image 
@@ -196,7 +224,11 @@ export default function Discover() {
             fontFamily: 'popins-bold'
           }}
           disabled={loader}
-          onPress={UploadImage}>
+          onPress={() => {
+            if (validateForm()) {  // Verificamos si el formulario es válido
+              UploadImage();  // Si es válido, procedemos a subir la imagen
+            }
+          }}>
           {loader ? (
             <ActivityIndicator size={'large'} />
           ) : (
