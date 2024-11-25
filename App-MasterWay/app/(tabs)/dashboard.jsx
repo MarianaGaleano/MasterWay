@@ -61,12 +61,17 @@ export default function Dashboard() {
     {/* componente calendario */}
     <View style={styles.container}>
       <Text style={styles.title}>Calendario</Text>
+      <TouchableOpacity onPress={() => router.replace('/calendar')}
+      activeOpacity={0.7}>
+        <View style={styles.profileHeader}>
+        <Image 
+        source={require('./../../assets/images/calendar-icon.png')} // Asegúrate de que esta ruta sea correcta
+        style={styles.calendarImage} 
+        />
         </View>
+      </TouchableOpacity>
+    </View>
 
-        <TouchableOpacity onPress={() => router.replace('/calendar')}
-         style={[styles.button, styles.editProfile]}>
-          <Text style={styles.editProfileText}>Calendario</Text>
-        </TouchableOpacity>
     </View>
   );
 }
@@ -106,6 +111,12 @@ const styles = StyleSheet.create({
     height: 85,
     borderRadius: 25,
     marginRight: 10,
+  },
+  calendarImage: {
+    width: 300, // Ajusta al tamaño deseado
+    height: 210, // Ajusta al tamaño deseado
+    resizeMode: 'contain', // Ajusta cómo se muestra la imagen
+    marginBottom: 20,
   },
   textContainer: {
     flexShrink: 1, // Hace que el texto se ajuste al espacio disponible

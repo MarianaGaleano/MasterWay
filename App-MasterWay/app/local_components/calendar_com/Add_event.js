@@ -203,13 +203,28 @@ export default function Add_Event() {
   };
 
   const toggleSwitch = () => {
-    setIsToggled(!isToggled);
-    console.log('isToggled',isToggled);
-    if (isToggled == false) {
-      startsetSelectedTime(dayjs().hour(0).minute(0)); // cambiar a 12:00am
-      finalsetSelectedTime(dayjs().hour(23).minute(59)); // cambiar a 11:59pm
-      console.log('hora inicio', startSelectedTime);
-    }
+    setIsToggled((prev) => {
+      const newToggledValue = !prev; // Invierte el estado actual
+  
+      // Actualiza las horas según el nuevo estado
+      if (newToggledValue) {
+        // Si el toggle está activado (Todo el día)
+        setnewEvent((prevEvent) => ({
+          ...prevEvent,
+          startSelectedTime: dayjs().hour(0).minute(0), // 00:00
+          finalSelectedTime: dayjs().hour(23).minute(59), // 23:59
+        }));
+      } else {
+        // Si el toggle está desactivado, restablece las horas actuales
+        setnewEvent((prevEvent) => ({
+          ...prevEvent,
+          startSelectedTime: dayjs(),
+          finalSelectedTime: dayjs(),
+        }));
+      }
+  
+      return newToggledValue;
+    });
   };
 
   return (

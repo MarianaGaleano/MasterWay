@@ -378,6 +378,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     flexGrow: 1,
+    paddingTop: 20,
+    margin: 10,
   },
   eventDetailsContainer: {
     marginTop: 20,
@@ -416,8 +418,8 @@ const styles = StyleSheet.create({
   },
   backImage: {
     backgroundColor: '#63D2D9',
-    width: 65,
-    height: 65,
+    width: 45,
+    height: 45,
     borderRadius: '50%',
     marginTop: 5,
     marginBottom: 20,
@@ -476,6 +478,7 @@ const styles = StyleSheet.create({
       padding: 15,
       borderRadius: 10,
       marginTop: 20,
+      margin: 15,
       display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
