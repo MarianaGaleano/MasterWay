@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter} from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import { db } from '../../../configs/FirebaseConfig';
@@ -42,6 +42,7 @@ export default function Add_Event() {
   const [isToggled, setIsToggled] = useState(false);
   const [nameEvent, setNameEvent] = useState('');
   const [description] = useState('');
+  const [isLoader, setIsLoader] = useState(false);
   
 
   const [newEvent, setnewEvent] = useState({
@@ -54,11 +55,11 @@ export default function Add_Event() {
   })
 
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-
   useEffect(() => {
-    if (isSelectEvent) {
-      setNameEvent(nameEventFav); // Pre-rellena el nombre del evento si se recibió
-    }
+    setIsLoader(true);
+    //if (isSelectEvent) {
+    //  setNameEvent(nameEventFav); // Pre-rellena el nombre del evento si se recibió
+    //}
 
     if (isEditing && parsedEvent && !isDataLoaded) {
       setnewEvent({
@@ -71,19 +72,18 @@ export default function Add_Event() {
       });
     }
       setIsDataLoaded(true);
+      setIsLoader(false);
   }, [isEditing, parsedEvent, isDataLoaded, router.params?.selectedName]); // Se agrega dependencia de parsedEvent
   
   
-  if (!isDataLoaded) {
-    return <Text>Cargando...</Text>; // Placeholder mientras se cargan los datos
-  }
 
   const UpdateEvent = async()=>{
+    setIsLoader(true);
     try{
-    //if (!newEvent.nameEvent || !newEvent.description || !newEvent.startSelectedDate || !newEvent.finalSelectedDate) {
-    //  alert("por favor llena todos los campos");
-    //  return;
-    //}
+    if (!newEvent.nameEvent || !newEvent.description || !newEvent.startSelectedDate || !newEvent.finalSelectedDate) {
+      alert("por favor llena todos los campos");
+      return;
+    }
     console.log('fecha seleccionada: ',startSelectedDate);
     const formattedStartDate = dayjs(newEvent.startSelectedDate).format('YYYY-MM-DD');
     const formattedStartTime = dayjs(newEvent.startSelectedTime).format('HH:mm:ss');
@@ -114,13 +114,19 @@ export default function Add_Event() {
   } catch (error) {
     console.error('Error al guardar el evento:', error);
     alert('Hubo un error al guardar el evento. Por favor, inténtalo nuevamente.');
+  } finally {
+    setIsLoader(false); // Desactiva el loader al terminar
   }
-    };
+  };
     
   //constantes que van a cambiar el estado de los campos;
-  const handleEventNameClick = () => {
+  const handleEventNameClick = (text) => {
     router.push(`../../(tabs)/favorites?isSelectEvent=true&setNameEvent=${nameEvent}`); // Navegar a Favoritos y pasar la función
-    console.log("setNameEvent: ", nameEvent);
+    console.log("setNameEvent: ", nameEvent);
+    setnewEvent((prevEvent) => ({
+      ...prevEvent,
+      nameEvent: text,
+    }));
   };
 
   
@@ -179,8 +185,7 @@ export default function Add_Event() {
               <TextInput
               placeholder='Seleccionar evento'
               value ={newEvent.nameEvent}
-              onChangeText={setNameEvent}
-              editable={false}
+              onChangeText={handleEventNameClick}
               />
               </TouchableOpacity>
             </View>

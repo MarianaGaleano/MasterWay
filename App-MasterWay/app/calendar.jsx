@@ -1,4 +1,4 @@
-import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native'
+import {View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
@@ -293,10 +293,14 @@ const newTheme = createTheme({
 
 //interfaz
   return (
-    <><><View style={styles.container}>
+    <><><ScrollView 
+    style={styles.eventScrollContainer}
+    contentContainerStyle={styles.scrollViewContent}
+    >
+    <View style={styles.container}>
 
       <TouchableOpacity onPress={() => router.replace('../(tabs)/dashboard')}>
-      <ArrowBackIcon size={20} sx={"color: #FFFFFF"} style={styles.backImage}/>
+      <ArrowBackIcon size={20} sx={{ color: '#FFFFFF' }} style={styles.backImage}/>
       </TouchableOpacity>
 
       <Text style={styles.title}>Calendario</Text>
@@ -333,12 +337,12 @@ const newTheme = createTheme({
             renderInput={(params) => <TextField {...params} />} />
         </ThemeProvider>
         </LocalizationProvider>
-      </View></></>
+      </View></>
 
         <View style={styles.eventDetailsContainer}>
           {selectedEvent ? (
             selectedEvent.map((event) => (
-              <>
+              <React.Fragment key={event.id}> {/* Asignar key aquí */}
               <Text style={styles.eventTitle}>{event.nameEvent}</Text>
               <View style={styles.eventCard}>
                 <Text style={styles.eventTime}>
@@ -351,9 +355,8 @@ const newTheme = createTheme({
                 <TouchableOpacity onPress={() => deleteEvent(event.id)}>
                   <DeleteIcon size={24} color="disabled" style={{ marginLeft: 10}}/>
                 </TouchableOpacity>
-
               </View>
-              </>
+              </React.Fragment>
             ))
         ) : (
           <Text style={styles.noEventText}>No hay eventos para esta fecha.</Text>
@@ -363,7 +366,8 @@ const newTheme = createTheme({
           <CalendarTodayIcon sx={{color: '#FFFFFF', fontSize: 33}} style={{ marginLeft: 5}}/>
           <Text style={styles.buttonText}>Agregar evento</Text>
         </TouchableOpacity>
-        </View></>
+        </View>
+        </ScrollView></></>
   );
 }
 
@@ -373,9 +377,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexGrow: 1,
   },
   eventDetailsContainer: {
     marginTop: 20,
+    flexGrow: 1,
   },
   calendarContainer: {
     borderWidth: 3,
@@ -383,6 +389,16 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 0, 
     margin: 12,
+    flexGrow: 1,
+  },
+  eventScrollContainer: {
+    flex: 1,
+    backgroundColor: '#F9F9F9',
+  },
+  scrollViewContent: {
+    flexGrow: 1, // Permite que el contenido se expanda si es necesario
+    justifyContent: 'flex-start', // Alinea el contenido al principio
+    paddingBottom: 20, // Espacio al final para un desplazamiento más suave
   },
   title: {
     fontFamily: 'popins-bold',
