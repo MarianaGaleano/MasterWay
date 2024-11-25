@@ -26,7 +26,7 @@ const Estrellas = ({ calificacion }) => {
 };
 
 export default function RecomendacionInfo({ recomendacion }) {
-  const [imageUrl, setImageUrl] = useState(null);
+  const [imageUrl, setImageUrl] = useState(recomendacion?.imageUrl || null);
   const [error, setError] = useState(null);
 
   useEffect(() => { 
