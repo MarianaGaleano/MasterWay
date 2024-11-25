@@ -1,15 +1,23 @@
-import { View, Text, FlatList, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState, useCallback } from 'react';
 import Shared from '../../components/RecomendacionesDetails/Shared';
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from './../../configs/FirebaseConfig';
 import TravelListItem from '../../components/Home/TravelListItem';
 import { useFocusEffect } from '@react-navigation/native';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function Favorites() {
     const [favIds, setFavIds] = useState([]);
     const [favRecomendacionesList, setFavRecomendacionesList] = useState([]);
     const [loader, setLoader] = useState(false);
+    const queryParams = useLocalSearchParams();
+
+    const isSelectEvent = queryParams?.isSelectEvent === 'true';
+    const nameEventFav = queryParams.setNameEvent || '';
+    const ParamEvent = queryParams.ParamEvent;
+
+    console.log('isSelected',isSelectEvent);
 
     useEffect(() => {
         GetFavRecomendacionesIds();
@@ -82,7 +90,7 @@ export default function Favorites() {
 
     return (
         <ScrollView style={containerStyle}>
-            <Text style={headerStyle}>Favoritos</Text>
+            <Text style={headerStyle}>{isSelectEvent ? 'Seleccione evento de favoritos':'Favoritos'}</Text>
             {loader ? (
                 <ActivityIndicator size="large" color="#0000ff" />
             ) : (
@@ -93,7 +101,11 @@ export default function Favorites() {
                     refreshing={loader}
                     renderItem={({ item }) => (
                         <View style={itemContainerStyle}>
-                            <TravelListItem recomendacion={item} />
+                                <TravelListItem 
+                                recomendacion= {item}
+                                isSelectEvent={isSelectEvent}
+                                ParamEvent={ParamEvent}
+                                />
                         </View>
                     )}
                     keyExtractor={(item) => item.id}

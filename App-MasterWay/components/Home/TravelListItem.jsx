@@ -4,14 +4,34 @@ import { useNavigation } from '@react-navigation/native'; // Importa useNavigati
 import { Colors } from './../../constants/Colors';
 import { useRouter } from 'expo-router';
 
-export default function TravelListItem({recomendacion}) { 
+export default function TravelListItem({recomendacion,isSelectEvent,ParamEvent}) { 
     const router=useRouter();
+    
+    const handlePress = () => {
+        if (isSelectEvent == true) {
+            console.log('isSelected',isSelectEvent);
+            // Redirigir a Add_event con parámetros
+            router.replace({
+                pathname: '/local_components/calendar_com/Add_event',
+                params: {
+                    isSelectEvent: true,
+                    isEditing: true,
+                    setNameEvent: recomendacion.NombreDelLugar,
+                    ParamEvent: ParamEvent,
+                }
+            });
+        } else {
+            // Redirigir a la página de detalles
+            router.push({
+                pathname: '/recomendaciones-details',
+                params: recomendacion
+            });
+        }
+    };
+
     return (
         <TouchableOpacity 
-            onPress={() => router.push({
-                pathname: '/recomendaciones-details',
-                params:recomendacion
-            })}
+            onPress={handlePress}
             style={styles.container} // Usa estilos de StyleSheet
         >
             <Image 

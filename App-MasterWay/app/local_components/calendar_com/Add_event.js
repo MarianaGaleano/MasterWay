@@ -25,9 +25,14 @@ export default function Add_Event() {
   
   const isSelectEvent = queryParams?.isSelectEvent === 'true';
   const nameEventFav = queryParams.setNameEvent || '';
+  const paramEvent = queryParams.ParamEvent;
+  const paramEventConv = paramEvent ? JSON.parse(decodeURIComponent(paramEvent)) : null;
   const isEditing = queryParams.isEditing === 'true'; // Asegúrate de convertir a booleano
   const eventToEdit = queryParams.eventToEdit;
   const parsedEvent = eventToEdit ? JSON.parse(decodeURIComponent(eventToEdit)) : null;
+  const eventId = parsedEvent?.id;
+  const eventParamId = paramEventConv?.id;
+  console.log('eventId',eventId)
 
   //console.log(useLocalSearchParams());
   //console.log("isEditing:", isEditing);
@@ -57,9 +62,6 @@ export default function Add_Event() {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   useEffect(() => {
     setIsLoader(true);
-    //if (isSelectEvent) {
-    //  setNameEvent(nameEventFav); // Pre-rellena el nombre del evento si se recibió
-    //}
 
     if (isEditing && parsedEvent && !isDataLoaded) {
       setnewEvent({
@@ -70,10 +72,19 @@ export default function Add_Event() {
         startSelectedTime: dayjs(parsedEvent.startSelectedTime, 'HH:mm:ss'),
         finalSelectedTime: dayjs(parsedEvent.finalSelectedTime, 'HH:mm:ss'),
       });
+    } else if (isSelectEvent){
+        setnewEvent({
+          nameEvent: nameEventFav || '',
+          description: paramEventConv.description || '',
+          startSelectedDate: dayjs(paramEventConv.startSelectedDate),
+          finalSelectedDate: dayjs(paramEventConv.finalSelectedDate),
+          startSelectedTime: dayjs(paramEventConv.startSelectedTime, 'HH:mm:ss'),
+          finalSelectedTime: dayjs(paramEventConv.finalSelectedTime, 'HH:mm:ss'),
+        });
     }
       setIsDataLoaded(true);
       setIsLoader(false);
-  }, [isEditing, parsedEvent, isDataLoaded, router.params?.selectedName]); // Se agrega dependencia de parsedEvent
+  }, [isEditing, parsedEvent, isDataLoaded]); // Se agrega dependencia de parsedEvent
   
   
 
@@ -99,9 +110,9 @@ export default function Add_Event() {
     finalSelectedTime: formattedEndTime,
     };
 
-    if (isEditing && eventToEdit) {
+    if (isEditing) {
       // Actualizar evento existente
-      const eventRef = doc(db, 'events', parsedEvent.id);
+      const eventRef = doc(db, 'events', eventParamId);
       await setDoc(eventRef, eventToSave, { merge: true }); // Actualización parcial
     }
     else {
@@ -120,13 +131,30 @@ export default function Add_Event() {
   };
     
   //constantes que van a cambiar el estado de los campos;
-  const handleEventNameClick = (text) => {
-    router.push(`../../(tabs)/favorites?isSelectEvent=true&setNameEvent=${nameEvent}`); // Navegar a Favoritos y pasar la función
-    console.log("setNameEvent: ", nameEvent);
-    setnewEvent((prevEvent) => ({
-      ...prevEvent,
-      nameEvent: text,
-    }));
+  const handleEventNameClick = () => {
+
+    if (eventId) {
+      // Si el evento tiene un `eventId`, lo añadimos correctamente al estado.
+      setnewEvent((prevEvent) => {
+          const updatedEvent = {
+              ...prevEvent,
+              id: eventId,
+          };
+          const ParamEvent = encodeURIComponent(JSON.stringify(updatedEvent));
+          console.log('eventId', updatedEvent.id);
+          router.push(`../../(tabs)/favorites?isSelectEvent=true&isEditing=true&setNameEvent=${nameEvent}&ParamEvent=${ParamEvent}`);
+          return updatedEvent;
+      });
+    } else {
+      const formattedEvent = {
+      ...newEvent,
+      startSelectedTime: dayjs(newEvent.startSelectedTime).format('HH:mm:ss'),
+      finalSelectedTime: dayjs(newEvent.finalSelectedTime).format('HH:mm:ss'),
+      };
+      const ParamEvent = encodeURIComponent(JSON.stringify(formattedEvent));
+      router.push(`../../(tabs)/favorites?isSelectEvent=true&setNameEvent=${nameEvent}&ParamEvent=${ParamEvent}`); // Navegar a Favoritos y pasar la función
+      console.log("setNameEvent: ", nameEvent);
+      }
   };
 
   
@@ -186,6 +214,7 @@ export default function Add_Event() {
               placeholder='Seleccionar evento'
               value ={newEvent.nameEvent}
               onChangeText={handleEventNameClick}
+              editable={false}
               />
               </TouchableOpacity>
             </View>
