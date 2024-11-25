@@ -41,7 +41,7 @@ export default function RecomendacionesDetails() {
                 <RecomendacionInfo recomendacion={recomendacion} />
 
                 {/* comentarios*/}
-                <Comentarios placeId={recomendacion.id}/>
+                <Comentarios placeId={recomendacion?.id} />
             </View>
         </ScrollView>
     );

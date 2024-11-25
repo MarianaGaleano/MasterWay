@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { Colors } from './../../constants/Colors';
 import MarkFav from './../../components/MarkFav';
+import { doc, getDoc } from 'firebase/firestore';  
+import { db } from './../../configs/FirebaseConfig';
 
 // Componente para mostrar las estrellas doradas
 const Estrellas = ({ calificacion }) => {
@@ -24,15 +26,41 @@ const Estrellas = ({ calificacion }) => {
 };
 
 export default function RecomendacionInfo({ recomendacion }) {
+  const [imageUrl, setImageUrl] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => { 
+    const fetchImage = async () => { 
+      try { 
+        const docRef = doc(db, 'recomendaciones ', recomendacion.id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setImageUrl(docSnap.data().imageUrl);
+        } else {
+          console.error('No such document!');
+          setError('La imagen no existe en Firestore Database.');
+        }
+      } catch (error) { 
+        console.error('Error fetching image:', error);
+        setError('Error al obtener la imagen de Firestore Database.');
+      } 
+    }; 
+    fetchImage(); 
+  }, [recomendacion.id]);
+
   return (
     <View>
       {/* Imagen de la recomendación */}
       <Image 
-        source={{ uri: recomendacion?.imageUrl}}
+        source={{ uri: imageUrl }}
         style={{
           width: '100%',
           height: 400,
           objectFit: 'cover',
+        }}
+        onError={(error) => {
+          console.error('Error al cargar la imagen: ', error.nativeEvent.error);
         }}
       />
       
