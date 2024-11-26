@@ -104,7 +104,7 @@ export default function SingIn() {
   }, []);
 
   return (
-    <View style={{
+    <ScrollView style={{
       padding:25,
       marginTop:60
     }}>
@@ -237,7 +237,7 @@ export default function SingIn() {
           }}>Registrarse con google</Text>
         </TouchableOpacity>
 
-    </View>
+    </ScrollView>
   )
 }
 
