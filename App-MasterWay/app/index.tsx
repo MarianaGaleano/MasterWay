@@ -13,8 +13,7 @@ export default function Index() {
         flex: 1,
       }}
     >
-      
-        <Login/>
+      <Login />
 
     </View>
   );
